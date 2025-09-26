@@ -1,0 +1,115 @@
+// src/Pages/ProductPage.jsx
+import React, { useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+
+// ✅ Components
+import Header from "../Main/Header.jsx";
+import Footer from "../Main/Footer.jsx";
+
+import products from "../Data/ProductListData";
+import ProductDetails from "../Components/Product/ProductDetails.jsx";
+import ProductFeatures from "../Components/Product/ProductFeatures.jsx";
+import ProductRelated from "../Components/Product/ProductRelated.jsx";
+import ProductSimilar from "../Components/Product/ProductSimilar.jsx";
+import ProductRecentViews from "../Components/Product/ProductRecentViews.jsx";
+
+import CoralData from "../Data/CoralData.jsx";
+import HuntData from "../Data/HuntData.jsx";
+import FoodData from "../Data/FoodData.jsx";
+import TankData from "../Data/TankData.jsx";
+import FishData from "../Data/FishData.jsx";
+import fish1 from "../assets/fish/fish/Adolfo s cory.png";
+import fish2 from "../assets/fish/fish/Adonis tetra.png";
+import fish3 from "../assets/fish/fish/African peacock cichlid.png";
+
+export default function ProductPage({ isLoggedIn, username, onLogout }) {
+  const { id } = useParams();
+  const product = products.find((p) => String(p.id) === id);
+
+  // ✅ Scroll to top when product id changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [id]);
+
+  const categories = [
+    { title: "Coral", data: CoralData },
+    { title: "Hunt", data: HuntData },
+    { title: "Fish", data: FishData },
+    { title: "Tank", data: TankData },
+    { title: "Food", data: FoodData },
+  ];
+
+  if (!product) {
+    return (
+      <>
+        <Header
+          isLoggedIn={isLoggedIn}
+          username={username}
+          onLogout={onLogout}
+        />
+
+        <div className="w-full px-4 md:px-8 lg:px-12 py-10 text-center min-h-[60vh] flex flex-col items-center justify-center">
+          <h2 className="text-xl font-semibold text-gray-800">
+            Product not found
+          </h2>
+          <Link
+            to="/shop"
+            className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700"
+          >
+            ← Back to Shop
+          </Link>
+        </div>
+
+        <Footer />
+      </>
+    );
+  }
+
+  return (
+    <div className="bg-white min-h-screen flex flex-col">
+      {/* ✅ Header */}
+      <Header isLoggedIn={isLoggedIn} username={username} onLogout={onLogout} />
+
+      {/* ✅ Main Content */}
+      <main className="flex-1 w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 py-6">
+        {/* Spacer for fixed header */}
+        <div className="h-[80px] md:h-[100px]"></div>
+
+        {/* Back Links */}
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Link
+            to="/shop"
+            className="px-3 py-1 bg-blue-400 text-white rounded hover:bg-blue-500 text-sm"
+          >
+            ❮ Back to Shop
+          </Link>
+        </div>
+
+        {/* ✅ Product Details */}
+        <ProductDetails product={product} />
+
+        {/* ✅ Features */}
+        <ProductFeatures />
+
+        {/* ✅ Related products slider */}
+        <ProductRelated />
+
+        <div className="py-5"></div>
+        {/* ✅ Similar Products */}
+        <ProductSimilar categories={categories} />
+        <div className="py-5"></div>
+        {/* ✅ Recently Viewed */}
+        <ProductRecentViews
+          recent={[
+            { id: 1001, name: "Adolfo s cory", image: fish1 },
+            { id: 1002, name: "Adonis tetra", image: fish2 },
+            { id: 1003, name: "African peacock cichlid", image: fish3 },
+          ]}
+        />
+      </main>
+
+      {/* ✅ Footer */}
+      <Footer />
+    </div>
+  );
+}
