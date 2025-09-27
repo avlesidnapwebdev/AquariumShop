@@ -1,12 +1,15 @@
 // Login.jsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
   const [isFlipped, setIsFlipped] = useState(false);
+
+  // API base URL
+  const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   // Login states
   const [loginEmailPhone, setLoginEmailPhone] = useState("");
@@ -26,7 +29,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -54,7 +57,7 @@ export default function Login() {
       return alert("Passwords do not match");
     }
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
+      const res = await fetch(`${API}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -77,37 +80,6 @@ export default function Login() {
     }
   };
 
-  // Handle Google login (works for both login & signup)
-  const handleGoogleLogin = async () => {
-    try {
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback: async (response) => {
-          try {
-            const res = await fetch("http://localhost:5000/api/auth/google", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ tokenId: response.credential }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-              localStorage.setItem("token", data.token);
-              navigate("/");
-            } else {
-              alert(data.message);
-            }
-          } catch (err) {
-            console.error(err);
-            alert("Google login failed.");
-          }
-        },
-      });
-      window.google.accounts.id.prompt();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-100 to-blue-200">
       <motion.div
@@ -118,7 +90,7 @@ export default function Login() {
       >
         {/* -------- Login Card -------- */}
         <div
-          className="absolute w-full h-full bg-white rounded-2xl shadow-xl p-8 backface-hidden"
+          className="absolute w-full h-auto bg-white rounded-2xl shadow-xl p-8 backface-hidden"
           style={{ transform: "rotateY(0deg)" }}
         >
           <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
@@ -174,23 +146,6 @@ export default function Login() {
               className="w-full bg-blue-600 text-white py-2 rounded-lg"
             >
               Login
-            </button>
-
-            {/* OTP Login */}
-            <button
-              type="button"
-              className="w-full border border-blue-600 text-blue-600 font-medium py-2 rounded-lg"
-            >
-              Login with OTP
-            </button>
-
-            {/* Google Login */}
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              className="w-full border border-gray-400 font-medium text-blue-500 flex items-center justify-center gap-2 py-2 rounded-lg"
-            >
-              <FaGoogle className="text-blue-500 font-medium" /> Login with Google
             </button>
           </form>
 
@@ -301,15 +256,6 @@ export default function Login() {
               className="w-full bg-green-600 text-white py-2 rounded-lg"
             >
               Register
-            </button>
-
-            {/* Google Signup */}
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              className="w-full border border-gray-400 font-medium text-green-600 flex items-center justify-center gap-2 py-2 rounded-lg mt-2"
-            >
-              <FaGoogle className="text-green-600 font-medium" /> Sign up with Google
             </button>
           </form>
 
