@@ -13,7 +13,13 @@ import AddToCartSidebar from "./Constant/AddToCartSidebar.jsx";
 import CategorySidebar from "./Constant/CategorySidebar.jsx";
 import AccountSidebar from "./Constant/AccountSidebar.jsx";
 
-export default function Header({ setQuery }) {
+export default function Header({
+  setQuery,
+  isLoggedIn,
+  username,
+  profilePic,
+  onLogout,
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
@@ -59,34 +65,30 @@ export default function Header({ setQuery }) {
     setCategoryOpen(false);
   };
 
-// Listen for footer sidebar toggle events
-useEffect(() => {
-  const handler = (e) => {
-    switch (e.detail) {
-      case "account":
-        setAccountOpen(true);
-        break;
-      case "cart":
-        setCartOpen(true);
-        break;
-      case "wishlist":
-        // if WishlistSidebar is inside AccountSidebar
-        setAccountOpen(true);
-        // optionally add logic in AccountSidebar to auto-switch to wishlist tab
-        break;
-      case "orders":
-        setAccountOpen(true);
-        // optionally add logic in AccountSidebar to auto-switch to orders tab
-        break;
-      default:
-        break;
-    }
-  };
+  // Listen for footer sidebar toggle events
+  useEffect(() => {
+    const handler = (e) => {
+      switch (e.detail) {
+        case "account":
+          setAccountOpen(true);
+          break;
+        case "cart":
+          setCartOpen(true);
+          break;
+        case "wishlist":
+          setAccountOpen(true);
+          break;
+        case "orders":
+          setAccountOpen(true);
+          break;
+        default:
+          break;
+      }
+    };
 
-  window.addEventListener("toggleSidebar", handler);
-  return () => window.removeEventListener("toggleSidebar", handler);
-}, []);
-
+    window.addEventListener("toggleSidebar", handler);
+    return () => window.removeEventListener("toggleSidebar", handler);
+  }, []);
 
   // Debounced search
   useEffect(() => {
@@ -96,9 +98,7 @@ useEffect(() => {
         setShowResults(false);
       } else {
         const q = inputValue.toLowerCase();
-        const results = data.filter((it) =>
-          it.title.toLowerCase().includes(q)
-        );
+        const results = data.filter((it) => it.title.toLowerCase().includes(q));
         setFilteredResults(results);
         setShowResults(true);
       }
@@ -173,15 +173,13 @@ useEffect(() => {
       <header
         className={`fixed w-full top-0 z-50 flex items-center justify-between px-2 md:px-8 lg:px-16 transition-all duration-300
         ${
-          scrolled
-            ? "bg-white shadow-md py-2 md:py-3"
-            : "bg-white py-2 md:py-3"
+          scrolled ? "bg-white shadow-md py-2 md:py-3" : "bg-white py-2 md:py-3"
         }`}
       >
         {/* Logo */}
         <div className="flex items-center">
-          <Link to={'/'}>
-          <img src={logo} alt="Logo" className="w-20 md:w-28 lg:w-32" />
+          <Link to={"/"}>
+            <img src={logo} alt="Logo" className="w-20 md:w-28 lg:w-32" />
           </Link>
         </div>
 
@@ -342,10 +340,18 @@ useEffect(() => {
               className="cursor-pointer hover:text-red-600 bg-blue-500 rounded-full p-2.5 border-white border-2"
               title="Account"
             >
-              <IoPersonCircle className="text-white" />
+              {isLoggedIn && profilePic ? (
+                <img
+                  src={profilePic}
+                  alt="Profile"
+                  className="w-6 h-6 rounded-full object-cover"
+                />
+              ) : (
+                <IoPersonCircle className="text-white" />
+              )}
             </button>
             <span className="text-xs font-semibold pt-2 text-blue-500">
-              Account
+              {isLoggedIn ? username || "User" : "Account"}
             </span>
           </div>
         </div>
@@ -403,7 +409,13 @@ useEffect(() => {
       />
 
       {/* Account Sidebar */}
-      <AccountSidebar isOpen={accountOpen} toggleSidebar={toggleAccount} />
+      <AccountSidebar
+        isOpen={accountOpen}
+        toggleSidebar={toggleAccount}
+        isLoggedIn={isLoggedIn}
+        username={username}
+        onLogout={onLogout}
+      />
 
       {/* Mobile bottom nav */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-md flex justify-around items-center py-3 md:hidden">
@@ -443,8 +455,18 @@ useEffect(() => {
           className="flex flex-col items-center text-blue-600 hover:text-red-600"
           onClick={toggleAccount}
         >
-          <IoPersonCircle className="w-7 h-7" />
-          <span className="text-xs font-semibold">Account</span>
+          {isLoggedIn && profilePic ? (
+            <img
+              src={profilePic}
+              alt="Profile"
+              className="w-6 h-6 rounded-full object-cover"
+            />
+          ) : (
+            <IoPersonCircle className="w-7 h-7" />
+          )}
+          <span className="text-xs font-semibold pt-1 text-blue-500">
+            {isLoggedIn ? username || "User" : "Account"}
+          </span>
         </button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // Constant/AccountSidebar.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaTimes,
@@ -22,26 +22,34 @@ import SaveAddress from "./SaveAddress.jsx";
 export default function AccountSidebar({
   isOpen,
   toggleSidebar,
-  username = "Selvapandi",
-  toggleWishlist, // optional: function provided by parent
-  isLoggedIn = false, // parent passes login state
-  onLogout = () => {}, // parent handles logout
+  username = "Guest",
+  toggleWishlist,
+  isLoggedIn = false,
+  onLogout = () => {},
 }) {
   const navigate = useNavigate();
 
-  // Local fallback states
+  // Local sub-sidebars
   const [localWishlistOpen, setLocalWishlistOpen] = useState(false);
   const [ordersOpen, setOrdersOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [cardsOpen, setCardsOpen] = useState(false);
   const [addressOpen, setAddressOpen] = useState(false);
 
+  // Current user info
+  const [currentProfilePic, setCurrentProfilePic] = useState(null);
+  const [currentUsername, setCurrentUsername] = useState(username);
+
+  // keep sidebar username in sync with props
+  useEffect(() => {
+    setCurrentUsername(username);
+  }, [username]);
+
   const recentProducts = [];
 
   const openWishlist = (e) => {
     e?.stopPropagation?.();
     toggleSidebar?.();
-
     if (typeof toggleWishlist === "function") {
       toggleWishlist();
     } else {
@@ -49,49 +57,58 @@ export default function AccountSidebar({
     }
   };
 
-  const menuItems = [
-    {
-      id: 1,
-      label: "My Orders",
-      icon: <FaBox />,
-      onClick: () => {
-        toggleSidebar?.();
-        setOrdersOpen(true);
-      },
-    },
-    { id: 2, label: "Wishlist", icon: <FaHeart />, onClick: openWishlist },
-    {
-      id: 3,
-      label: "Edit Profile",
-      icon: <FaEdit />,
-      onClick: () => {
-        toggleSidebar?.();
-        setProfileOpen(true);
-      },
-    },
-    {
-      id: 4,
-      label: "Saved Cards",
-      icon: <FaCreditCard />,
-      onClick: () => {
-        toggleSidebar?.();
-        setCardsOpen(true);
-      },
-    },
-    {
-      id: 5,
-      label: "Saved Address",
-      icon: <FaMapMarkerAlt />,
-      onClick: () => {
-        toggleSidebar?.();
-        setAddressOpen(true);
-      },
-    },
-  ];
+  // ✅ Update sidebar when profile is edited
+  const handleProfileUpdate = (data) => {
+    setCurrentUsername(data.fullName || currentUsername);
+    setCurrentProfilePic(data.profilePic || currentProfilePic);
+  };
+
+  // ✅ only logged-in users get full menu
+  const menuItems = isLoggedIn
+    ? [
+        {
+          id: 1,
+          label: "My Orders",
+          icon: <FaBox />,
+          onClick: () => {
+            toggleSidebar?.();
+            setOrdersOpen(true);
+          },
+        },
+        { id: 2, label: "Wishlist", icon: <FaHeart />, onClick: openWishlist },
+        {
+          id: 3,
+          label: "Edit Profile",
+          icon: <FaEdit />,
+          onClick: () => {
+            toggleSidebar?.();
+            setProfileOpen(true);
+          },
+        },
+        {
+          id: 4,
+          label: "Saved Cards",
+          icon: <FaCreditCard />,
+          onClick: () => {
+            toggleSidebar?.();
+            setCardsOpen(true);
+          },
+        },
+        {
+          id: 5,
+          label: "Saved Address",
+          icon: <FaMapMarkerAlt />,
+          onClick: () => {
+            toggleSidebar?.();
+            setAddressOpen(true);
+          },
+        },
+      ]
+    : []; // guests see no account menu
 
   return (
     <>
-      {/* Main Account Sidebar */}
+      {/* Main Sidebar */}
       <div
         className={`fixed top-0 right-0 h-full w-72 bg-white shadow-lg transform transition-transform duration-300 z-50
         ${isOpen ? "translate-x-0" : "translate-x-full"}`}
@@ -110,12 +127,20 @@ export default function AccountSidebar({
 
         {/* Header */}
         <div className="flex items-center gap-3 px-6 mt-12">
-          <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-blue-600">
-            <FaUser className="text-xl" />
+          <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+            {currentProfilePic ? (
+              <img
+                src={currentProfilePic}
+                alt="Profile"
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <FaUser className="text-xl text-blue-600" />
+            )}
           </div>
           <div>
             <h4 className="text-lg font-semibold text-gray-800">
-              {isLoggedIn ? username : "Guest"}
+              {isLoggedIn ? currentUsername : "Guest"}
             </h4>
             <p className="text-sm text-gray-500">
               {isLoggedIn ? "Manage your account" : "Welcome, please login"}
@@ -123,7 +148,7 @@ export default function AccountSidebar({
           </div>
         </div>
 
-        {/* Menu Items (always visible) */}
+        {/* Menu */}
         <div className="flex flex-col gap-4 mt-8 px-6">
           {menuItems.map(({ id, label, icon, onClick }) => (
             <button
@@ -150,9 +175,13 @@ export default function AccountSidebar({
               }
               toggleSidebar?.();
             }}
-            className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 text-gray-700 font-medium mt-4"
+            className={`flex items-center gap-4 p-3 rounded-lg font-medium mt-4 ${
+              isLoggedIn
+                ? "bg-red-500 hover:bg-red-600 text-white"
+                : "bg-blue-500 hover:bg-blue-600 text-white"
+            }`}
           >
-            <span className="text-blue-600">
+            <span className="text-white">
               {isLoggedIn ? <FaSignOutAlt /> : <FaSignInAlt />}
             </span>
             {isLoggedIn ? "Logout" : "Login"}
@@ -185,7 +214,7 @@ export default function AccountSidebar({
         </div>
       </div>
 
-      {/* Local Sidebars if parent doesn’t provide them */}
+      {/* Local Sub-Sidebars */}
       {!toggleWishlist && (
         <WishlistSidebar
           wishlistOpen={localWishlistOpen}
@@ -198,7 +227,12 @@ export default function AccountSidebar({
       )}
 
       <MyOrders open={ordersOpen} setOpen={setOrdersOpen} />
-      <EditProfile open={profileOpen} setOpen={setProfileOpen} />
+      <EditProfile
+        open={profileOpen}
+        setOpen={setProfileOpen}
+        onProfileUpdate={handleProfileUpdate}
+        isLoggedIn={isLoggedIn}
+      />
       <SaveCards open={cardsOpen} setOpen={setCardsOpen} />
       <SaveAddress open={addressOpen} setOpen={setAddressOpen} />
     </>

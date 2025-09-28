@@ -3,7 +3,7 @@ import Header from "../Main/Header.jsx";
 import Hero from "../Components/Home/Hero.jsx";
 import CategorySection from "../Components/Home/Category.jsx";
 import BannerSection from "../Components/Home/BannerSection.jsx";
-import AdvertisementFish from "../Components/Home/Advertisement/AdvertisementFish";
+import AdvertisementFish from "../Components/Home/Advertisement/AdvertisementFish.jsx";
 import Fish from "../Components/Home/BestSelling/Fish.jsx";
 import Hunt from "../Components/Home/BestSelling/Hunt.jsx";
 import Tank from "../Components/Home/BestSelling/Tank.jsx";
@@ -16,26 +16,45 @@ import AdvertisementCoral from "../Components/Home/Advertisement/AdvertisementCo
 import Brands from "../Components/Home/Advertisement/Brands.jsx";
 import Footer from "../Main/Footer.jsx";
 
-export default function Home() {
+export default function Home({ isLoggedIn, username, onLogout }) {
   const [query, setQuery] = useState("");
 
   return (
     <div>
-      <Header query={query} setQuery={setQuery} />
+      {/* ✅ Pass down login props to Header */}
+      <Header
+        query={query}
+        setQuery={setQuery}
+        isLoggedIn={isLoggedIn}
+        username={username}
+        onLogout={onLogout}
+      />
+
+      {/* ✅ Page Sections */}
       <Hero />
       <CategorySection />
       <BannerSection />
+
+      {/* Advertisements + Best Selling */}
       <AdvertisementFish />
       <Fish />
+
       <AdvertisementHunt />
       <Hunt />
+
       <AdvertisementTank />
       <Tank />
+
       <AdvertisementFood />
       <Food />
+
       <AdvertisementCoral />
       <Coral />
+
+      {/* Brands */}
       <Brands />
+
+      {/* Footer */}
       <Footer />
     </div>
   );

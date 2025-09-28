@@ -1,22 +1,18 @@
-// Login.jsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-export default function Login() {
+export default function Login({ onLogin }) {
   const navigate = useNavigate();
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // API base URL
-  const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
-  // Login states
+  // --- Login states ---
   const [loginEmailPhone, setLoginEmailPhone] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
-  // Register states
+  // --- Register states ---
   const [fullName, setFullName] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPhone, setRegPhone] = useState("");
@@ -25,59 +21,48 @@ export default function Login() {
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
 
-  // Handle login
-  const handleLogin = async (e) => {
+  // --- Handle login (Local Storage) ---
+  const handleLogin = (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch(`${API}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          emailOrPhone: loginEmailPhone,
-          password: loginPassword,
-        }),
+
+    const savedUser = JSON.parse(localStorage.getItem("userData"));
+    if (
+      savedUser &&
+      (savedUser.email === loginEmailPhone ||
+        savedUser.phone === loginEmailPhone) &&
+      savedUser.password === loginPassword
+    ) {
+      // Success
+      localStorage.setItem("isLoggedIn", true);
+      onLogin({
+        fullName: savedUser.fullName,
+        email: savedUser.email,
+        phone: savedUser.phone,
+        profilePic: savedUser.profilePic || null,
       });
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        navigate("/");
-      } else {
-        alert(data.message);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Login failed. Try again.");
+      navigate("/");
+    } else {
+      alert("Invalid credentials. Please try again.");
     }
   };
 
-  // Handle register
-  const handleRegister = async (e) => {
+  // --- Handle register (Local Storage) ---
+  const handleRegister = (e) => {
     e.preventDefault();
     if (regPassword !== regConfirmPassword) {
       return alert("Passwords do not match");
     }
-    try {
-      const res = await fetch(`${API}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName,
-          email: regEmail,
-          phone: regPhone,
-          password: regPassword,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert("Registration successful. Please login.");
-        setIsFlipped(false);
-      } else {
-        alert(data.message);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Registration failed. Try again.");
-    }
+
+    const userData = {
+      fullName,
+      email: regEmail,
+      phone: regPhone,
+      password: regPassword,
+    };
+
+    localStorage.setItem("userData", JSON.stringify(userData));
+    alert("Registration successful! Please login.");
+    setIsFlipped(false);
   };
 
   return (
@@ -97,7 +82,6 @@ export default function Login() {
             Login
           </h2>
           <form onSubmit={handleLogin} className="space-y-4 text-blue-500">
-            {/* Email / Phone */}
             <div>
               <label className="text-sm font-medium">Email or Phone</label>
               <input
@@ -108,8 +92,6 @@ export default function Login() {
                 required
               />
             </div>
-
-            {/* Password */}
             <div>
               <label className="text-sm font-medium">Password</label>
               <div className="relative">
@@ -129,8 +111,6 @@ export default function Login() {
                 </button>
               </div>
             </div>
-
-            {/* Forgot Password */}
             <div className="text-right">
               <button
                 type="button"
@@ -139,8 +119,6 @@ export default function Login() {
                 Forgot Password?
               </button>
             </div>
-
-            {/* Login Button */}
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-lg"
@@ -148,8 +126,6 @@ export default function Login() {
               Login
             </button>
           </form>
-
-          {/* Flip to Register */}
           <p className="text-center mt-6 text-sm text-blue-500">
             Not registered?{" "}
             <button
@@ -170,7 +146,6 @@ export default function Login() {
             Register
           </h2>
           <form onSubmit={handleRegister} className="space-y-4">
-            {/* Full Name */}
             <div>
               <label className="text-sm">Full Name</label>
               <input
@@ -181,8 +156,6 @@ export default function Login() {
                 required
               />
             </div>
-
-            {/* Email */}
             <div>
               <label className="text-sm">Email</label>
               <input
@@ -193,8 +166,6 @@ export default function Login() {
                 required
               />
             </div>
-
-            {/* Phone */}
             <div>
               <label className="text-sm">Phone</label>
               <input
@@ -205,8 +176,6 @@ export default function Login() {
                 required
               />
             </div>
-
-            {/* Password */}
             <div>
               <label className="text-sm">Password</label>
               <div className="relative">
@@ -226,8 +195,6 @@ export default function Login() {
                 </button>
               </div>
             </div>
-
-            {/* Confirm Password */}
             <div>
               <label className="text-sm">Confirm Password</label>
               <div className="relative">
@@ -249,8 +216,6 @@ export default function Login() {
                 </button>
               </div>
             </div>
-
-            {/* Register Button */}
             <button
               type="submit"
               className="w-full bg-green-600 text-white py-2 rounded-lg"
@@ -258,8 +223,6 @@ export default function Login() {
               Register
             </button>
           </form>
-
-          {/* Flip to Login */}
           <p className="text-center mt-6 text-sm">
             Already have an account?{" "}
             <button

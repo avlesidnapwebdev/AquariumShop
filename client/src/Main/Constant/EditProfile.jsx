@@ -1,40 +1,63 @@
-// EditProfile.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { IoClose, IoCamera } from "react-icons/io5";
-import { FaUserCircle } from "react-icons/fa"; // dummy profile icon
+import { FaUserCircle } from "react-icons/fa";
 
-export default function EditProfile({ open, setOpen }) {
+export default function EditProfile({
+  open,
+  setOpen,
+  onProfileUpdate,
+  isLoggedIn,
+  token,
+}) {
   const sidebarRef = useRef(null);
 
-  // Saved states (the actual profile data)
   const [savedProfilePic, setSavedProfilePic] = useState(null);
-  const [savedFirstName, setSavedFirstName] = useState("Selva");
-  const [savedLastName, setSavedLastName] = useState("Pandi");
-  const [savedMobile, setSavedMobile] = useState("9876543210");
-  const [savedEmail, setSavedEmail] = useState("selva@example.com");
+  const [savedFullName, setSavedFullName] = useState("");
+  const [savedMobile, setSavedMobile] = useState("");
+  const [savedEmail, setSavedEmail] = useState("");
 
-  // Editable states (for temporary changes before save)
-  const [profilePic, setProfilePic] = useState(savedProfilePic);
-  const [firstName, setFirstName] = useState(savedFirstName);
-  const [lastName, setLastName] = useState(savedLastName);
-  const [mobile, setMobile] = useState(savedMobile);
-  const [email, setEmail] = useState(savedEmail);
+  const [profilePic, setProfilePic] = useState(null);
+  const [fullName, setFullName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
 
-  // Mode: view or edit
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Handle outside click
+  // Clear profile data (on logout or first open)
+  const clearProfile = () => {
+    setSavedProfilePic(null);
+    setSavedFullName("");
+    setSavedMobile("");
+    setSavedEmail("");
+    setProfilePic(null);
+    setFullName("");
+    setMobile("");
+    setEmail("");
+    setIsEditing(false);
+  };
+
+  // Fetch profile data (placeholder – connect later with backend)
+  useEffect(() => {
+    if (open && isLoggedIn && token) {
+      // ⏳ Later: fetch user profile from your backend here
+      // Right now just using saved state / placeholders
+      setIsEditing(false);
+    }
+
+    if (!isLoggedIn) clearProfile();
+  }, [open, isLoggedIn, token]);
+
+  // Close on outside click
   useEffect(() => {
     const handleClick = (e) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target))
         setOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [setOpen]);
 
-  // Handle profile picture upload
   const handleProfileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -44,21 +67,26 @@ export default function EditProfile({ open, setOpen }) {
     }
   };
 
-  // Save changes
   const handleSave = () => {
+    setLoading(true);
+
+    // ⏳ Later: send formData to backend here
     setSavedProfilePic(profilePic);
-    setSavedFirstName(firstName);
-    setSavedLastName(lastName);
+    setSavedFullName(fullName);
     setSavedMobile(mobile);
     setSavedEmail(email);
+
     setIsEditing(false);
+    setLoading(false);
+
+    if (onProfileUpdate) {
+      onProfileUpdate({ profilePic, fullName, mobile, email });
+    }
   };
 
-  // Cancel changes
   const handleCancel = () => {
     setProfilePic(savedProfilePic);
-    setFirstName(savedFirstName);
-    setLastName(savedLastName);
+    setFullName(savedFullName);
     setMobile(savedMobile);
     setEmail(savedEmail);
     setIsEditing(false);
@@ -66,19 +94,18 @@ export default function EditProfile({ open, setOpen }) {
 
   return (
     <div
-      className={`fixed inset-0 bg-black/40 z-50 transition-opacity duration-300 ${
+      className={`fixed inset-0 bg-black/40 z-50 transition-opacity ${
         open ? "opacity-100 visible" : "opacity-0 invisible"
       }`}
       onClick={() => setOpen(false)}
     >
       <div
         ref={sidebarRef}
-        className={`fixed top-0 right-0 h-full w-96 bg-white shadow-lg transform transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-96 bg-white shadow-lg transform transition-transform ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex justify-between items-center p-5 border-b">
           <h2 className="text-xl font-bold text-blue-600">Edit Profile</h2>
           <button
@@ -89,31 +116,18 @@ export default function EditProfile({ open, setOpen }) {
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-5 overflow-y-auto h-full scrollbar-hide space-y-6">
-          {/* Profile Picture */}
+        <div className="p-5 overflow-y-auto h-full space-y-6">
           <div className="flex flex-col items-center">
             <div className="relative">
-              {isEditing ? (
-                profilePic ? (
-                  <img
-                    src={profilePic}
-                    alt="Profile"
-                    className="w-28 h-28 rounded-full object-cover border-2 border-blue-500"
-                  />
-                ) : (
-                  <FaUserCircle className="w-28 h-28 text-blue-400 border-2 border-blue-500 rounded-full" />
-                )
-              ) : savedProfilePic ? (
+              {profilePic ? (
                 <img
-                  src={savedProfilePic}
+                  src={profilePic}
                   alt="Profile"
-                  className="w-28 h-28 rounded-full object-cover border-2 border-blue-500"
+                  className="w-28 h-28 rounded-full object-contain border-2 border-blue-500"
                 />
               ) : (
                 <FaUserCircle className="w-28 h-28 text-blue-400 border-2 border-blue-500 rounded-full" />
               )}
-
               {isEditing && (
                 <>
                   <label
@@ -134,88 +148,54 @@ export default function EditProfile({ open, setOpen }) {
             </div>
           </div>
 
-          {/* Profile Info */}
           {!isEditing ? (
             <div className="space-y-4">
-              <div>
-                <p className="text-lg font-semibold text-blue-500">Name</p>
-                <p className="font-semibold text-gray-800">
-                  {savedFirstName} {savedLastName}
-                </p>
-              </div>
-              <div>
-                <p className="text-lg font-semibold text-blue-500">Mobile</p>
-                <p className="font-semibold text-gray-800">{savedMobile}</p>
-              </div>
-              <div>
-                <p className="text-lg font-semibold text-blue-500">Email</p>
-                <p className="font-semibold text-gray-800">{savedEmail}</p>
-              </div>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full"
-              >
-                Edit Profile
-              </button>
+              <p className="text-lg font-semibold text-blue-500">Name</p>
+              <p className="font-semibold text-gray-800">{savedFullName}</p>
+              <p className="text-lg font-semibold text-blue-500">Mobile</p>
+              <p className="font-semibold text-gray-800">{savedMobile}</p>
+              <p className="text-lg font-semibold text-blue-500">Email</p>
+              <p className="font-semibold text-gray-800">{savedEmail}</p>
+
+              {isLoggedIn && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full"
+                >
+                  Edit Profile
+                </button>
+              )}
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* First + Last Name */}
-              <div>
-                <label className="block mb-1 text-base font-semibold text-blue-500">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  className="w-full border text-black rounded-lg p-2 mb-3"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                />
-
-                <label className="block text-base font-semibold text-blue-500 mb-1">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  className="w-full border text-black rounded-lg p-2 mb-3"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                />
-              </div>
-
-              {/* Mobile Number */}
-              <div>
-                <label className="block text-base font-semibold text-blue-500 mb-1">
-                  Mobile Number
-                </label>
-                <input
-                  type="tel"
-                  className="w-full border text-black rounded-lg p-2 mb-3"
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
-                />
-              </div>
-
-              {/* Email Address */}
-              <div>
-                <label className="block text-base font-semibold text-blue-500 mb-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  className="w-full border text-black rounded-lg p-2 mb-3"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-
-              {/* Actions */}
+            <div className="space-y-3 text-blue-500">
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Full Name"
+                className="w-full border p-2 rounded-lg"
+              />
+              <input
+                type="tel"
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+                placeholder="Mobile"
+                className="w-full border p-2 rounded-lg"
+              />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="w-full border p-2 rounded-lg"
+              />
               <div className="flex gap-3">
                 <button
                   onClick={handleSave}
+                  disabled={loading}
                   className="bg-green-600 text-white px-4 py-2 rounded-lg flex-1"
                 >
-                  Save
+                  {loading ? "Saving..." : "Save"}
                 </button>
                 <button
                   onClick={handleCancel}
