@@ -1,42 +1,58 @@
 import User from "../models/User.js";
+import Cart from "../models/Cart.js";
+import Wishlist from "../models/Wishlist.js";
+import Order from "../models/Order.js";
+import fs from "fs";
+import path from "path";
 
-// Get current user profile (req.user is set by protect)
+/* Get profile (protected) */
 export const getProfile = async (req, res) => {
-  res.json(req.user); // already excludes password in middleware
+  try {
+    res.json(req.user); // middleware sets req.user (without password)
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
-// Update profile fields: name, email (if allowed) or password
+/* Update profile (supports multipart/form-data with profilePic) */
 export const updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const { name, email, password } = req.body;
-    if (name) user.name = name;
+    const { fullName, mobile, email } = req.body;
+    if (fullName) user.fullName = fullName;
+    if (mobile) user.mobile = mobile;
     if (email) user.email = email;
-    if (password) user.password = password; // pre-save hook will hash
+
+    if (req.file) {
+      // delete old file if exists
+      if (user.profilePic && user.profilePic.startsWith("/uploads/")) {
+        const filePath = path.join(process.cwd(), user.profilePic);
+        try { fs.unlinkSync(filePath); } catch (e) { /* ignore */ }
+      }
+      user.profilePic = `/uploads/${req.file.filename}`;
+    }
 
     await user.save();
-    res.json({ message: "Profile updated", user: { id: user._id, name: user.name, email: user.email, addresses: user.addresses, cards: user.cards } });
+    res.json({ message: "Profile updated", ...user.toObject() });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-/* Address management */
+/* Add address */
 export const addAddress = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     user.addresses.push(req.body);
     await user.save();
     res.json({ message: "Address added", addresses: user.addresses });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  } catch (err) { res.status(500).json({ message: "Server error" }); }
 };
 
+/* Update address */
 export const updateAddress = async (req, res) => {
   try {
     const { addressId } = req.params;
@@ -46,53 +62,36 @@ export const updateAddress = async (req, res) => {
     user.addresses[idx] = { ...user.addresses[idx].toObject(), ...req.body };
     await user.save();
     res.json({ message: "Address updated", addresses: user.addresses });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  } catch (err) { res.status(500).json({ message: "Server error" }); }
 };
 
-export const deleteAddress = async (req, res) => {
+/* Remove address */
+export const removeAddress = async (req, res) => {
   try {
     const { addressId } = req.params;
     const user = await User.findById(req.user._id);
     user.addresses = user.addresses.filter(a => a._id.toString() !== addressId);
     await user.save();
     res.json({ message: "Address removed", addresses: user.addresses });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  } catch (err) { res.status(500).json({ message: "Server error" }); }
 };
 
-/* Card management
-   - We expect a token from front-end (Razorpay token) if card should be saved for reuse.
-   - We will only store masked data and providerToken (not CVV / raw number).
-*/
+/* Add card (expects providerToken + masked data) */
 export const addCard = async (req, res) => {
   try {
     const { providerToken, brand, last4, expiryMonth, expiryYear, isDefault } = req.body;
-
-    // Defensive: do not accept full PAN or CVV
     if (req.body.cardNumber || req.body.cvv) {
-      return res.status(400).json({ message: "Do not send full card number or CVV. Use provider tokenization." });
+      return res.status(400).json({ message: "Do not send full card details to server" });
     }
-
     const user = await User.findById(req.user._id);
+    if (isDefault) user.cards.forEach(c => c.isDefault = false);
     user.cards.push({ providerToken, brand, last4, expiryMonth, expiryYear, isDefault: !!isDefault });
-    if (isDefault) {
-      // unset others
-      user.cards = user.cards.map((c, idx, arr) => ({ ...c.toObject(), isDefault: c.isDefault }));
-      // (we pushed with isDefault true already)
-    }
     await user.save();
-    res.json({ message: "Card saved (masked)", cards: user.cards });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+    res.json({ message: "Card added", cards: user.cards });
+  } catch (err) { res.status(500).json({ message: "Server error" }); }
 };
 
+/* Remove card */
 export const removeCard = async (req, res) => {
   try {
     const { cardId } = req.params;
@@ -100,6 +99,31 @@ export const removeCard = async (req, res) => {
     user.cards = user.cards.filter(c => c._id.toString() !== cardId);
     await user.save();
     res.json({ message: "Card removed", cards: user.cards });
+  } catch (err) { res.status(500).json({ message: "Server error" }); }
+};
+
+/* Delete user and cascade delete related data */
+export const deleteUser = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // delete profile pic file
+    if (user.profilePic && user.profilePic.startsWith("/uploads/")) {
+      const filePath = path.join(process.cwd(), user.profilePic);
+      try { fs.unlinkSync(filePath); } catch (e) { /* ignore */ }
+    }
+
+    // delete related collections
+    await Cart.deleteOne({ user: userId });
+    await Wishlist.deleteOne({ user: userId });
+    await Order.deleteMany({ user: userId });
+
+    // remove user
+    await user.deleteOne();
+
+    res.json({ message: "User and related data removed" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

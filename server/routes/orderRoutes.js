@@ -4,9 +4,9 @@ import { placeOrder, getMyOrders, getOrderById, updateOrderStatus } from "../con
 
 const router = express.Router();
 
-router.post("/", protect, placeOrder);            // place order (creates order doc)
-router.get("/", protect, getMyOrders);            // get all orders of user
-router.get("/:id", protect, getOrderById);        // get specific order (user-only)
-router.put("/:id/status", protect, updateOrderStatus); // update order status (for demo)
+router.post("/", protect, placeOrder);
+router.get("/", protect, getMyOrders);
+router.get("/:id", protect, getOrderById);
+router.put("/:id/status", protect, updateOrderStatus);
 
 export default router;

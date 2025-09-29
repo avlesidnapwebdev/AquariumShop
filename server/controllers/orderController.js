@@ -1,9 +1,9 @@
 import Order from "../models/Order.js";
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
-/* Helper to compute cart total and build order products */
+/* Build order from cart */
 const buildOrderFromCart = async (cart) => {
   let total = 0;
   const products = [];
@@ -20,7 +20,6 @@ const buildOrderFromCart = async (cart) => {
 
 export const placeOrder = async (req, res) => {
   try {
-    // body: { addressId (or address object), paymentMethod, cardId (optional) }
     const { addressId, paymentMethod = "Cash", address: addressObj } = req.body;
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart || cart.products.length === 0) return res.status(400).json({ message: "Cart is empty" });
@@ -39,7 +38,7 @@ export const placeOrder = async (req, res) => {
 
     const { products, total } = await buildOrderFromCart(cart);
 
-    const orderNumber = `AQ-${Date.now().toString(36)}-${Math.floor(Math.random()*10000)}`;
+    const orderNumber = `AQ-${Date.now().toString(36)}-${Math.floor(Math.random()*10000)}-${uuidv4().slice(0,6)}`;
     const order = await Order.create({
       orderNumber,
       user: req.user._id,
@@ -50,12 +49,12 @@ export const placeOrder = async (req, res) => {
       paymentStatus: paymentMethod === "Cash" ? "Pending" : "Pending"
     });
 
-    // reduce stock (simple)
+    // reduce stock
     for (const it of products) {
       await Product.findByIdAndUpdate(it.product, { $inc: { stock: -it.quantity } });
     }
 
-    // Clear cart after placing order
+    // clear cart
     cart.products = [];
     await cart.save();
 
@@ -70,10 +69,7 @@ export const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
     res.json(orders);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  } catch (err) { res.status(500).json({ message: "Server error" }); }
 };
 
 export const getOrderById = async (req, res) => {
@@ -81,23 +77,16 @@ export const getOrderById = async (req, res) => {
     const order = await Order.findOne({ _id: req.params.id, user: req.user._id }).populate("products.product");
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.json(order);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  } catch (err) { res.status(500).json({ message: "Server error" }); }
 };
 
-// Admin or fulfillment updates order status (for demo we allow the user to update if needed)
 export const updateOrderStatus = async (req, res) => {
   try {
-    const { status } = req.body; // must be one of allowed statuses
+    const { status } = req.body;
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Order not found" });
     order.status = status;
     await order.save();
     res.json({ message: "Order status updated", order });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  } catch (err) { res.status(500).json({ message: "Server error" }); }
 };
