@@ -5,6 +5,7 @@ import axios from "axios";
 // In production: set REACT_APP_API_URL in .env
 const API = axios.create({
   baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000/api",
+  timeout: 10000, // 10 seconds timeout added
 });
 
 // 👉 Attach JWT token automatically if exists
