@@ -1,7 +1,7 @@
 import React from "react";
 import FishBg from "../../assets/fish/fish/Betta Fish.png";
 import { Link } from "react-router-dom";
-
+ 
 export default function Hero() {
   return (
     <section className="flex flex-col lg:flex-row items-center justify-center bg-gradient-to-br from-cyan-400 to-blue-700 px-6 lg:px-16 py-20 lg:py-32 text-center lg:text-left min-h-screen gap-12">

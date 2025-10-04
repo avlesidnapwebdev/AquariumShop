@@ -10,7 +10,7 @@ export default function EditProfile({
   token,
 }) {
   const sidebarRef = useRef(null);
-
+ 
   const [savedProfilePic, setSavedProfilePic] = useState(null);
   const [savedFullName, setSavedFullName] = useState("");
   const [savedMobile, setSavedMobile] = useState("");

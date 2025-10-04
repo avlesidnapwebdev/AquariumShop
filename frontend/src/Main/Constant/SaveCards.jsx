@@ -4,7 +4,7 @@ import { IoClose } from "react-icons/io5";
 
 export default function SaveCards({ open, setOpen }) {
   const sidebarRef = useRef(null);
-
+ 
   // States
   const [cards, setCards] = useState([]);
   const [showForm, setShowForm] = useState(false);

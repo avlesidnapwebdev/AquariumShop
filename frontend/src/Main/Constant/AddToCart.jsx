@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 const CartContext = createContext();
-
+ 
 export function CartProvider({ children }) {
   // load initial value from localStorage
   const [cart, setCart] = useState(() => {

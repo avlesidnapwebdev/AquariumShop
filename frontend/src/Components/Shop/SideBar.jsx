@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 
 export default function SideBar({ filters, setFilters, counts, isOpen, toggleSidebar }) {
   const location = useLocation();
-
+ 
   // Sync category filter with URL (shop?category=Fish)
   useEffect(() => {
     const params = new URLSearchParams(location.search);

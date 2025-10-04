@@ -6,7 +6,7 @@ import { FiShoppingCart } from "react-icons/fi";
 import { useCart } from "../../Main/Constant/AddToCart.jsx";
 import { useWishlist } from "../../Main/Constant/Wishlist.jsx";
 import ProductsData from "../../Data/ProductsData.jsx";
-
+ 
 export default function ProductRelated() {
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();

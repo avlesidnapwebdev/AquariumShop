@@ -6,7 +6,7 @@ import { useWishlist } from "../../Main/Constant/Wishlist.jsx";
 export default function ProductRecentViews({ recent }) {
   const scrollRef = useRef();
   const { addToWishlist } = useWishlist();
-
+ 
   if (!recent || recent.length === 0) {
     return null; // Hide if no recent views
   }

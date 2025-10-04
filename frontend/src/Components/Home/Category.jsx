@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import data from "../../Data/CatrgoryData";
-
+ 
 export default function Category() {
   const navigate = useNavigate();
 

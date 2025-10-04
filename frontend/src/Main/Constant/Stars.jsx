@@ -3,7 +3,7 @@ import { FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
 
 const Stars = ({ rating }) => {
   const stars = [];
-
+ 
   // Fill stars array with icons based on rating
   for (let i = 1; i <= 5; i++) {
     if (rating >= i) {

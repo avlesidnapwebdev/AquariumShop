@@ -2,7 +2,7 @@ import React from "react";
 import { FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import data from "../../Data/CatrgoryData";
-
+ 
 export default function CategorySidebar({ isOpen, toggleSidebar }) {
   const navigate = useNavigate();
 

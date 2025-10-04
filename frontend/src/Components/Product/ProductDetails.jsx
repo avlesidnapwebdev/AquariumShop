@@ -4,7 +4,7 @@ import { useCart } from "../../Main/Constant/AddToCart.jsx";
 import { useWishlist } from "../../Main/Constant/Wishlist.jsx";
 import { useNavigate } from "react-router-dom";
 import Stars from "../../Main/Constant/Stars.jsx";
-
+ 
 export default function ProductDetails({ product }) {
   const [qty, setQty] = useState(1);
   const { addToCart } = useCart();

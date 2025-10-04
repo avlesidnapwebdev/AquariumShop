@@ -4,7 +4,7 @@ import FoodFish from "../../assets/fish/Foods_Banner.png";
 import Decoration from "../../assets/fish/Decoration_Banner.png";
 import FishPole from "../../assets/fish/Fishpole_Banner.png";
 import { Link } from "react-router-dom";
-
+ 
 const banners = [
   {
     id: 1,

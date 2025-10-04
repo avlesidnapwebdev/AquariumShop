@@ -7,7 +7,7 @@ export default function ProductFeatures() {
     { icon: <FaMoneyBillWave />, text: "Cash/Pay on Delivery" },
     { icon: <FaUndo />, text: "10 Days Refund/Replacement" },
   ];
-
+ 
   return (
     <div className="grid md:grid-cols-3 gap-4 text-center my-8 text-blue-500">
       {features.map((f, i) => (

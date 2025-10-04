@@ -9,7 +9,7 @@ export function OrderProvider({ children }) {
   const addOrder = (order) => {
     setOrders((prev) => [...prev, order]);
   };
-
+ 
   const clearOrders = () => {
     setOrders([]);
   };

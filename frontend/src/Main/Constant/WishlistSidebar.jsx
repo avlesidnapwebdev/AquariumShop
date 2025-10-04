@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useWishlist } from "./Wishlist.jsx";
 import { FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-
+ 
 export default function WishlistSidebar({ wishlistOpen, toggleWishlist }) {
   const { wishlistItems, removeFromWishlist, clearWishlist } = useWishlist();
   const sidebarRef = useRef(null);

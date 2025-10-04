@@ -4,7 +4,7 @@ import { FaTrash, FaHeart } from "react-icons/fa";
 import { useCart } from "./AddToCart.jsx";
 import { useWishlist } from "./Wishlist.jsx";
 import { useNavigate } from "react-router-dom";
-
+ 
 export default function AddToCartSidebar({ cartOpen, toggleCart }) {
   const { cartItems, removeFromCart } = useCart();
   const { addToWishlist } = useWishlist();

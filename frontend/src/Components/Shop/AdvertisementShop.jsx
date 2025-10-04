@@ -2,7 +2,7 @@ import React from "react";
 
 export default function AdvertisementShop() {
   return (
-    <>
+    <> 
     <div className="h-14 md:h-20 lg:h-20"></div>
     <section className="w-full bg-white p-10  px-4 md:px-8 lg:px-16">
       <div className="flex flex-col md:flex-row justify-center items-center gap-6">

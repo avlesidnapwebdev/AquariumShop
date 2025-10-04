@@ -8,7 +8,7 @@ export default function MyOrderSideBar({ open, setOpen }) {
   const sidebarRef = useRef(null);
   const ordersContext = useOrders();
   const orders = ordersContext?.orders || [];
-
+  
   // Close sidebar when clicking outside
   useEffect(() => {
     const handleClick = (e) => {
