@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+// src/App.jsx
+import React, { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 
+// Pages
 import Home from "./Pages/Home.jsx";
 import Shop from "./Pages/Shop.jsx";
 import Wishlist from "./Pages/WishList.jsx";
@@ -13,6 +15,9 @@ import BuyNow from "./Pages/BuyNow.jsx";
 import CheckOut from "./Pages/CheckOut.jsx";
 import Order from "./Pages/Order.jsx";
 
+// API
+import { getProfile } from "./api/api.js";
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState({
@@ -22,28 +27,42 @@ function App() {
     profilePic: null,
   });
 
-  const API =
-    import.meta.env.VITE_API_URL || "https://aquariumshop.onrender.com";
-
-  // --- Login handler ---
+  /* =====================================================
+     ✅ Handle login success
+     - Save token and user data
+     ===================================================== */
   const handleLogin = (userData, token) => {
-    setIsLoggedIn(true);
-    setUser(userData);
+    if (token) {
+      localStorage.setItem("token", token);
+      setIsLoggedIn(true);
+    }
 
-    // Save token and user data
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
+    if (userData) {
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+    } else {
+      setUser((prev) => ({ ...prev, fullName: "User" }));
+    }
   };
 
-  // --- Logout handler ---
+  /* =====================================================
+     ✅ Handle logout
+     ===================================================== */
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setIsLoggedIn(false);
-    setUser({ fullName: "Guest", email: "", phone: "", profilePic: null });
+    setUser({
+      fullName: "Guest",
+      email: "",
+      phone: "",
+      profilePic: null,
+    });
   };
 
-  // --- Restore login state on refresh ---
+  /* =====================================================
+     ✅ Restore session on page load
+     ===================================================== */
   useEffect(() => {
     const token = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
@@ -52,36 +71,36 @@ function App() {
       setIsLoggedIn(true);
 
       if (savedUser) {
-        setUser(JSON.parse(savedUser));
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch {
+          // ignore parse error
+        }
       } else {
-        // Fetch user profile from backend
-        fetch(`${API}/api/user/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        // Fetch profile from backend if not saved locally
+        getProfile()
           .then((res) => {
-            if (!res.ok) throw new Error("Failed to fetch profile");
-            return res.json();
-          })
-          .then((profileData) => {
-            if (profileData) {
-              const userData = {
-                fullName: profileData.fullName || "User",
-                email: profileData.email || "",
-                phone: profileData.mobile || "",
-                profilePic: profileData.profilePic || null,
-              };
-              setUser(userData);
-              localStorage.setItem("user", JSON.stringify(userData));
-            }
+            const profile = res.data;
+            const userData = {
+              fullName: profile?.fullName || profile?.name || "User",
+              email: profile?.email || "",
+              phone: profile?.phone || profile?.mobile || "",
+              profilePic: profile?.profilePic || profile?.avatar || null,
+            };
+            setUser(userData);
+            localStorage.setItem("user", JSON.stringify(userData));
           })
           .catch((err) => {
-            console.error("Profile fetch error:", err);
+            console.error("Failed to fetch profile:", err);
             handleLogout();
           });
       }
     }
   }, []);
 
+  /* =====================================================
+     ✅ ROUTES
+     ===================================================== */
   return (
     <Routes>
       <Route
@@ -95,6 +114,7 @@ function App() {
           />
         }
       />
+
       <Route
         path="/product/:id"
         element={
@@ -106,6 +126,7 @@ function App() {
           />
         }
       />
+
       <Route path="/buy-now" element={<BuyNow />} />
       <Route path="/shop" element={<Shop />} />
       <Route path="/ordertracking" element={<OrderTracking />} />
@@ -115,9 +136,14 @@ function App() {
       <Route path="/order" element={<Order />} />
 
       {/* Login */}
-      <Route path="/login" element={<Login onLogin={handleLogin} />} />
+      <Route
+        path="/login"
+        element={
+          <Login onLogin={(userData, token) => handleLogin(userData, token)} />
+        }
+      />
 
-      {/* 404 */}
+      {/* 404 Not Found */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

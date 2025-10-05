@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+/* ===========================
+   ✅ Address Schema
+   =========================== */
 const AddressSchema = new mongoose.Schema({
   label: String,
   name: String,
@@ -10,30 +13,50 @@ const AddressSchema = new mongoose.Schema({
   city: String,
   state: String,
   pincode: String,
-  country: { type: String, default: "India" }
+  country: { type: String, default: "India" },
 });
 
+/* ===========================
+   ✅ Card Schema (Supports CVV + Name + Mask)
+   =========================== */
 const CardSchema = new mongoose.Schema({
-  providerToken: String, // e.g., token from Razorpay (not raw PAN)
-  brand: String,
-  last4: String,
-  expiryMonth: Number,
-  expiryYear: Number,
+  providerToken: { type: String, required: true },
+  brand: { type: String, required: true }, // e.g., Visa, Mastercard
+  last4: { type: String, required: true },
+  expiryMonth: { type: Number, required: true },
+  expiryYear: { type: Number, required: true },
+  cardType: {
+    type: String,
+    enum: ["Credit", "Debit", "Prepaid", "UPI", "Other"],
+    default: "Credit",
+  },
+  cvv: { type: String, required: true, select: true },
   isDefault: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
+  name: { type: String, required: true, default: "Card Holder" }, // ✅ Fixed
+  createdAt: { type: Date, default: Date.now },
 });
 
-const UserSchema = new mongoose.Schema({
-  fullName: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  mobile: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  profilePic: { type: String, default: null },
-  addresses: [AddressSchema],
-  cards: [CardSchema]
-}, { timestamps: true });
 
-// hash password on save
+
+/* ===========================
+   ✅ User Schema
+   =========================== */
+const UserSchema = new mongoose.Schema(
+  {
+    fullName: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    mobile: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    profilePic: { type: String, default: null },
+    addresses: [AddressSchema],
+    cards: [CardSchema],
+  },
+  { timestamps: true }
+);
+
+/* ===========================
+   ✅ Password Hash Middleware
+   =========================== */
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
@@ -41,7 +64,9 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-// compare password
+/* ===========================
+   ✅ Compare Password Method
+   =========================== */
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };

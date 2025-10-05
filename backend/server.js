@@ -17,15 +17,36 @@ dotenv.config();
 await connectDB();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
-// serve uploads statically
+// ================================
+// ✅ Middleware
+// ================================
+app.use(cors({
+  origin: ["http://localhost:5173", "http://localhost:3000"], // add your frontend URLs
+  credentials: true,
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ================================
+// ✅ File paths
+// ================================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Serve uploaded images statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// mount routes
+// Optional: direct file access
+app.get("/uploads/:filename", (req, res) => {
+  const filePath = path.join(__dirname, "uploads", req.params.filename);
+  res.sendFile(filePath);
+});
+
+// ================================
+// ✅ Routes
+// ================================
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
@@ -34,7 +55,22 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payment", paymentRoutes);
 
+// Default route
 app.get("/", (req, res) => res.send("Aquarium Shop Backend is running"));
 
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Global Error:", err.stack || err);
+  res.status(500).json({ message: "Server error", error: err.message || err });
+});
+
+// ================================
+// ✅ Start Server
+// ================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

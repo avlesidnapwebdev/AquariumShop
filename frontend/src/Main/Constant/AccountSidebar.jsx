@@ -1,4 +1,3 @@
-// Constant/AccountSidebar.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,52 +17,82 @@ import MyOrders from "./MyOrderSideBar.jsx";
 import EditProfile from "./EditProfile.jsx";
 import SaveCards from "./SaveCards.jsx";
 import SaveAddress from "./SaveAddress.jsx";
- 
+
 export default function AccountSidebar({
   isOpen,
   toggleSidebar,
   username = "Guest",
-  toggleWishlist,
   isLoggedIn = false,
   onLogout = () => {},
+  onProfileChange = (updatedUser) => {}, // parent can pass handler
 }) {
   const navigate = useNavigate();
+  const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-  // Local sub-sidebars
+  // Local states
   const [localWishlistOpen, setLocalWishlistOpen] = useState(false);
   const [ordersOpen, setOrdersOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [cardsOpen, setCardsOpen] = useState(false);
   const [addressOpen, setAddressOpen] = useState(false);
 
-  // Current user info
   const [currentProfilePic, setCurrentProfilePic] = useState(null);
   const [currentUsername, setCurrentUsername] = useState(username);
 
-  // keep sidebar username in sync with props
+  // ✅ Helper to correctly resolve image URLs
+  const resolveProfilePic = (pic) => {
+    if (!pic) return null;
+    if (pic.startsWith("data:")) return pic; // base64 image
+    if (pic.startsWith("http")) return pic; // absolute URL
+    if (pic.startsWith("/uploads")) return `${baseURL}${pic}`;
+    if (pic.startsWith("uploads")) return `${baseURL}/${pic}`;
+    return `${baseURL}/uploads/${pic}`;
+  };
+
+  // ✅ Load user info from localStorage on mount and username change
   useEffect(() => {
-    setCurrentUsername(username);
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const u = JSON.parse(user);
+        if (u.fullName) setCurrentUsername(u.fullName);
+        if (u.profilePic) setCurrentProfilePic(resolveProfilePic(u.profilePic));
+      } catch (err) {
+        console.error("❌ Failed to parse user data:", err);
+      }
+    } else {
+      setCurrentUsername(username);
+      setCurrentProfilePic(null);
+    }
   }, [username]);
 
-  const recentProducts = [];
-
-  const openWishlist = (e) => {
-    e?.stopPropagation?.();
-    toggleSidebar?.();
-    if (typeof toggleWishlist === "function") {
-      toggleWishlist();
-    } else {
-      setLocalWishlistOpen(true);
-    }
-  };
-
-  // ✅ Update sidebar when profile is edited
+  // ✅ Handle updates when EditProfile saves
   const handleProfileUpdate = (data) => {
-    setCurrentUsername(data.fullName || currentUsername);
-    setCurrentProfilePic(data.profilePic || currentProfilePic);
+    if (!data) return;
+
+    const updatedUsername = data.fullName || currentUsername;
+    const updatedProfilePic = resolveProfilePic(data.profilePic) || currentProfilePic;
+
+    setCurrentUsername(updatedUsername);
+    setCurrentProfilePic(updatedProfilePic);
+
+    // ✅ Merge and save updated data to localStorage
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const mergedUser = {
+        ...savedUser,
+        fullName: updatedUsername,
+        profilePic: data.profilePic, // store raw path/base64 (not resolved)
+      };
+      localStorage.setItem("user", JSON.stringify(mergedUser));
+    } catch (err) {
+      console.error("❌ Failed to save user:", err);
+    }
+
+    // Notify parent if needed
+    onProfileChange(data);
   };
 
-  // ✅ only logged-in users get full menu
   const menuItems = isLoggedIn
     ? [
         {
@@ -75,7 +104,12 @@ export default function AccountSidebar({
             setOrdersOpen(true);
           },
         },
-        { id: 2, label: "Wishlist", icon: <FaHeart />, onClick: openWishlist },
+        {
+          id: 2,
+          label: "Wishlist",
+          icon: <FaHeart />,
+          onClick: () => setLocalWishlistOpen(true),
+        },
         {
           id: 3,
           label: "Edit Profile",
@@ -104,17 +138,17 @@ export default function AccountSidebar({
           },
         },
       ]
-    : []; // guests see no account menu
+    : [];
 
   return (
     <>
-      {/* Main Sidebar */}
+      {/* MAIN ACCOUNT SIDEBAR */}
       <div
         className={`fixed top-0 right-0 h-full w-72 bg-white shadow-lg transform transition-transform duration-300 z-50
         ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
+        {/* CLOSE BUTTON */}
         <button
           className="absolute top-5 right-5 text-2xl text-blue-700"
           onClick={(e) => {
@@ -125,14 +159,18 @@ export default function AccountSidebar({
           <FaTimes />
         </button>
 
-        {/* Header */}
+        {/* PROFILE HEADER */}
         <div className="flex items-center gap-3 px-6 mt-12">
           <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
             {currentProfilePic ? (
               <img
                 src={currentProfilePic}
                 alt="Profile"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+                }}
               />
             ) : (
               <FaUser className="text-xl text-blue-600" />
@@ -148,7 +186,7 @@ export default function AccountSidebar({
           </div>
         </div>
 
-        {/* Menu */}
+        {/* MENU LIST */}
         <div className="flex flex-col gap-4 mt-8 px-6">
           {menuItems.map(({ id, label, icon, onClick }) => (
             <button
@@ -164,7 +202,7 @@ export default function AccountSidebar({
             </button>
           ))}
 
-          {/* Login / Logout */}
+          {/* LOGIN / LOGOUT BUTTON */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -188,34 +226,17 @@ export default function AccountSidebar({
           </button>
         </div>
 
-        {/* Recently Viewed */}
+        {/* RECENTLY VIEWED */}
         <div className="mt-10 px-6">
-          <h3 className="text-md font-bold text-blue-600 mb-3">
-            Recently Viewed
-          </h3>
+          <h3 className="text-md font-bold text-blue-600 mb-3">Recently Viewed</h3>
           <div className="flex gap-3 overflow-x-auto pb-2">
-            {recentProducts.length > 0 ? (
-              recentProducts.map((src, index) => (
-                <div
-                  key={index}
-                  className="min-w-[80px] h-[80px] rounded-lg shadow-md flex-shrink-0 bg-white"
-                >
-                  <img
-                    src={src}
-                    alt={`Product ${index + 1}`}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-gray-500">No recent products</p>
-            )}
+            <p className="text-sm text-gray-500">No recent products</p>
           </div>
         </div>
       </div>
 
-      {/* Local Sub-Sidebars */}
-      {!toggleWishlist && (
+      {/* OTHER SUB SIDEBARS */}
+      {!toggleSidebar && (
         <WishlistSidebar
           wishlistOpen={localWishlistOpen}
           toggleWishlist={() => setLocalWishlistOpen(false)}
@@ -231,7 +252,6 @@ export default function AccountSidebar({
         open={profileOpen}
         setOpen={setProfileOpen}
         onProfileUpdate={handleProfileUpdate}
-        isLoggedIn={isLoggedIn}
       />
       <SaveCards open={cardsOpen} setOpen={setCardsOpen} />
       <SaveAddress open={addressOpen} setOpen={setAddressOpen} />

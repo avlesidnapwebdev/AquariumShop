@@ -85,7 +85,6 @@ export default function Header({
           break;
       }
     };
-
     window.addEventListener("toggleSidebar", handler);
     return () => window.removeEventListener("toggleSidebar", handler);
   }, []);
@@ -183,7 +182,7 @@ export default function Header({
           </Link>
         </div>
 
-        {/* Mobile search */}
+        {/* Mobile search (untouched) */}
         <div
           ref={searchMobileRef}
           className="relative flex md:hidden items-center flex-1 mx-3"
@@ -254,7 +253,7 @@ export default function Header({
           ))}
         </nav>
 
-        {/* desktop search */}
+        {/* desktop search (untouched) */}
         <div
           ref={searchDesktopRef}
           className="hidden md:flex relative items-center ml-4"
@@ -297,7 +296,7 @@ export default function Header({
 
         {/* desktop icons */}
         <div className="hidden md:flex items-center gap-6 text-2xl">
-          {/* Categories Button */}
+          {/* Categories */}
           <div className="flex flex-col items-center">
             <button
               onClick={toggleCategory}
@@ -312,7 +311,7 @@ export default function Header({
             </span>
           </div>
 
-          {/* Cart Button */}
+          {/* Cart */}
           <div className="flex flex-col items-center">
             <button
               ref={cartButtonRef}
@@ -333,7 +332,7 @@ export default function Header({
             </span>
           </div>
 
-          {/* Account Button */}
+          {/* Account */}
           <div className="flex flex-col items-center">
             <button
               onClick={toggleAccount}
@@ -427,7 +426,6 @@ export default function Header({
           <span className="text-xs font-semibold">Home</span>
         </Link>
 
-        {/* Categories Button Mobile */}
         <button
           className="flex flex-col items-center text-blue-600 hover:text-red-600"
           onClick={toggleCategory}

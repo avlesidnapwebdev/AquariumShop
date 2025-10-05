@@ -4,8 +4,15 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { protect } from "../middleware/authMiddleware.js";
 import {
-  getProfile, updateProfile, addAddress, updateAddress, removeAddress,
-  addCard, removeCard, deleteUser
+  getProfile,
+  updateProfile,
+  addAddress,
+  updateAddress,
+  removeAddress,
+  addCard,
+  removeCard,
+  setDefaultCard, // ✅ import the new controller
+  deleteUser
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -19,19 +26,29 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// =======================
+// PROFILE ROUTES
+// =======================
 router.get("/profile", protect, getProfile);
 router.put("/profile", protect, upload.single("profilePic"), updateProfile);
 
-// addresses
+// =======================
+// ADDRESS ROUTES
+// =======================
 router.post("/addresses", protect, addAddress);
 router.put("/addresses/:addressId", protect, updateAddress);
 router.delete("/addresses/:addressId", protect, removeAddress);
 
-// cards
+// =======================
+// CARD ROUTES
+// =======================
 router.post("/cards", protect, addCard);
 router.delete("/cards/:cardId", protect, removeCard);
+router.put("/cards/default/:cardId", protect, setDefaultCard); // ✅ NEW: set default card
 
-// delete account (cascade)
+// =======================
+// DELETE ACCOUNT
+// =======================
 router.delete("/", protect, deleteUser);
 
 export default router;

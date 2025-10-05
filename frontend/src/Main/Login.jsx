@@ -2,67 +2,106 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { login as loginAPI, register as registerAPI } from "../api/api.js"; // ✅ fixed import
 
 export default function Login({ onLogin }) {
   const navigate = useNavigate();
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // --- Login states ---
+  // Login
   const [loginEmailPhone, setLoginEmailPhone] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
-  // --- Register states ---
+  // Register
   const [fullName, setFullName] = useState("");
   const [regEmail, setRegEmail] = useState("");
-  const [regPhone, setRegPhone] = useState("");
+  const [regMobile, setRegMobile] = useState(""); // renamed to mobile
   const [regPassword, setRegPassword] = useState("");
   const [regConfirmPassword, setRegConfirmPassword] = useState("");
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
 
-  // --- Handle login (Local Storage) ---
-  const handleLogin = (e) => {
+  // --- handle login ---
+  const handleLogin = async (e) => {
     e.preventDefault();
+    try {
+      const payload = {
+        email: loginEmailPhone,
+        password: loginPassword,
+      };
 
-    const savedUser = JSON.parse(localStorage.getItem("userData"));
-    if (
-      savedUser &&
-      (savedUser.email === loginEmailPhone ||
-        savedUser.phone === loginEmailPhone) &&
-      savedUser.password === loginPassword
-    ) {
-      // Success
-      localStorage.setItem("isLoggedIn", true);
-      onLogin({
-        fullName: savedUser.fullName,
-        email: savedUser.email,
-        phone: savedUser.phone,
-        profilePic: savedUser.profilePic || null,
-      });
+      const res = await loginAPI(payload);
+      const data = res.data || {};
+      const token = data.token || (data?.user && data.user.token) || null;
+      const user = data.user || data;
+
+      if (token) localStorage.setItem("token", token);
+
+      const userObj = {
+        fullName: user?.fullName || user?.name || user?.username || "User",
+        email: user?.email || "",
+        phone: user?.mobile || user?.phone || "",
+        profilePic: user?.profilePic || user?.avatar || null,
+      };
+
+      localStorage.setItem("user", JSON.stringify(userObj));
+      onLogin(userObj, token);
       navigate("/");
-    } else {
-      alert("Invalid credentials. Please try again.");
+    } catch (err) {
+      console.error("Login error:", err);
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        "Login failed. Check credentials.";
+      alert(message);
     }
   };
 
-  // --- Handle register (Local Storage) ---
-  const handleRegister = (e) => {
+  // --- handle register ---
+  const handleRegister = async (e) => {
     e.preventDefault();
-    if (regPassword !== regConfirmPassword) {
+    if (regPassword !== regConfirmPassword)
       return alert("Passwords do not match");
+
+    try {
+      const payload = {
+        fullName,
+        email: regEmail,
+        mobile: regMobile, // renamed key to match backend
+        password: regPassword,
+      };
+
+      const res = await registerAPI(payload);
+      const data = res.data || {};
+
+      const token = data.token || null;
+      const user = data.user || null;
+
+      if (token) localStorage.setItem("token", token);
+
+      if (user) {
+        const userObj = {
+          fullName: user.fullName || user.name || fullName,
+          email: user.email || regEmail,
+          phone: user.mobile || regMobile,
+          profilePic: user.profilePic || null,
+        };
+        localStorage.setItem("user", JSON.stringify(userObj));
+        onLogin(userObj, token);
+        navigate("/");
+      } else {
+        alert("Registration successful! Please login.");
+        setIsFlipped(false);
+      }
+    } catch (err) {
+      console.error("Register error:", err);
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        "Registration failed. Make sure email or mobile is unique.";
+      alert(message);
     }
-
-    const userData = {
-      fullName,
-      email: regEmail,
-      phone: regPhone,
-      password: regPassword,
-    };
-
-    localStorage.setItem("userData", JSON.stringify(userData));
-    alert("Registration successful! Please login.");
-    setIsFlipped(false);
   };
 
   return (
@@ -73,7 +112,7 @@ export default function Login({ onLogin }) {
         transition={{ duration: 0.6 }}
         style={{ transformStyle: "preserve-3d" }}
       >
-        {/* -------- Login Card -------- */}
+        {/* Login */}
         <div
           className="absolute w-full h-auto bg-white rounded-2xl shadow-xl p-8 backface-hidden"
           style={{ transform: "rotateY(0deg)" }}
@@ -83,7 +122,7 @@ export default function Login({ onLogin }) {
           </h2>
           <form onSubmit={handleLogin} className="space-y-4 text-blue-500">
             <div>
-              <label className="text-sm font-medium">Email or Phone</label>
+              <label className="text-sm font-medium">Email or Mobile</label>
               <input
                 type="text"
                 className="w-full border rounded-lg p-2 mt-1 text-black font-medium"
@@ -111,6 +150,7 @@ export default function Login({ onLogin }) {
                 </button>
               </div>
             </div>
+
             <div className="text-right">
               <button
                 type="button"
@@ -119,6 +159,7 @@ export default function Login({ onLogin }) {
                 Forgot Password?
               </button>
             </div>
+
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-lg"
@@ -126,6 +167,7 @@ export default function Login({ onLogin }) {
               Login
             </button>
           </form>
+
           <p className="text-center mt-6 text-sm text-blue-500">
             Not registered?{" "}
             <button
@@ -137,7 +179,7 @@ export default function Login({ onLogin }) {
           </p>
         </div>
 
-        {/* -------- Register Card -------- */}
+        {/* Register */}
         <div
           className="absolute w-full h-auto bg-white text-blue-500 font-medium rounded-2xl shadow-xl p-8 backface-hidden"
           style={{ transform: "rotateY(180deg)" }}
@@ -167,12 +209,12 @@ export default function Login({ onLogin }) {
               />
             </div>
             <div>
-              <label className="text-sm">Phone</label>
+              <label className="text-sm">Mobile</label>
               <input
                 type="tel"
                 className="w-full border rounded-lg p-2 mt-1 text-black font-medium"
-                value={regPhone}
-                onChange={(e) => setRegPhone(e.target.value)}
+                value={regMobile}
+                onChange={(e) => setRegMobile(e.target.value)}
                 required
               />
             </div>
@@ -216,6 +258,7 @@ export default function Login({ onLogin }) {
                 </button>
               </div>
             </div>
+
             <button
               type="submit"
               className="w-full bg-green-600 text-white py-2 rounded-lg"
@@ -223,6 +266,7 @@ export default function Login({ onLogin }) {
               Register
             </button>
           </form>
+
           <p className="text-center mt-6 text-sm">
             Already have an account?{" "}
             <button
