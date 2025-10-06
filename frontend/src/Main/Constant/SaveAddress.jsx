@@ -213,7 +213,7 @@ export default function SaveAddress({ open, setOpen }) {
     >
       <div
         ref={sidebarRef}
-        className={`fixed top-0 right-0 h-full w-96 bg-white shadow-lg transform transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-96 pb-36 bg-white shadow-lg transform transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -354,7 +354,7 @@ export default function SaveAddress({ open, setOpen }) {
               addresses.map((addr) => (
                 <div
                   key={addr._id}
-                  className={`p-4 border rounded-lg shadow capitalize relative transition-colors duration-300 ${
+                  className={`p-4 border rounded-lg shadow capitalize relative transition-colors duration-300  ${
                     addr._id === defaultAddressId
                       ? "bg-green-600"
                       : "bg-gradient-to-r from-blue-500 to-indigo-600"
