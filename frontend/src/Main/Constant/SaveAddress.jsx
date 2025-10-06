@@ -6,22 +6,18 @@ import {
   addAddress,
   updateAddress,
   removeAddress,
-  setDefaultAddress, // ✅ NEW API import
+  setDefaultAddress,
 } from "../../api/api.js";
 import { Country, State, City } from "country-state-city";
 
-export default function SaveAddress({ open, setOpen }) {
+export default function SaveAddress({ open, setOpen, onSelect }) {
   const sidebarRef = useRef(null);
 
-  // ===========================
-  // STATE MANAGEMENT
-  // ===========================
   const [addresses, setAddresses] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Form fields
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [pincode, setPincode] = useState("");
@@ -31,17 +27,11 @@ export default function SaveAddress({ open, setOpen }) {
   const [house, setHouse] = useState("");
   const [road, setRoad] = useState("");
 
-  // Dynamic dropdown data
   const [allCountries, setAllCountries] = useState([]);
   const [allStates, setAllStates] = useState([]);
   const [allCities, setAllCities] = useState([]);
-
-  // Default address ID
   const [defaultAddressId, setDefaultAddressId] = useState(null);
 
-  // ===========================
-  // FETCH USER ADDRESSES
-  // ===========================
   useEffect(() => {
     if (open) fetchAddresses();
   }, [open]);
@@ -59,16 +49,10 @@ export default function SaveAddress({ open, setOpen }) {
     }
   };
 
-  // ===========================
-  // LOAD COUNTRIES INITIALLY
-  // ===========================
   useEffect(() => {
     setAllCountries(Country.getAllCountries());
   }, []);
 
-  // ===========================
-  // STATE / CITY DYNAMIC UPDATES
-  // ===========================
   useEffect(() => {
     if (country) {
       const selected = allCountries.find((c) => c.name === country);
@@ -92,9 +76,6 @@ export default function SaveAddress({ open, setOpen }) {
     }
   }, [state]);
 
-  // ===========================
-  // CLOSE ON OUTSIDE CLICK
-  // ===========================
   useEffect(() => {
     const handleClick = (e) => {
       if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
@@ -105,9 +86,6 @@ export default function SaveAddress({ open, setOpen }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [setOpen]);
 
-  // ===========================
-  // RESET FORM
-  // ===========================
   const resetForm = () => {
     setFullName("");
     setPhone("");
@@ -121,9 +99,6 @@ export default function SaveAddress({ open, setOpen }) {
     setShowForm(false);
   };
 
-  // ===========================
-  // SAVE OR UPDATE ADDRESS
-  // ===========================
   const handleSaveAddress = async () => {
     if (!fullName || !phone || !pincode || !country || !state || !city || !house || !road) {
       alert("Please fill all fields");
@@ -159,9 +134,6 @@ export default function SaveAddress({ open, setOpen }) {
     }
   };
 
-  // ===========================
-  // EDIT / DELETE HANDLERS
-  // ===========================
   const handleEdit = (addr) => {
     setFullName(addr.name);
     setPhone(addr.phone);
@@ -186,12 +158,9 @@ export default function SaveAddress({ open, setOpen }) {
     }
   };
 
-  // ===========================
-  // SET DEFAULT ADDRESS (API CALL)
-  // ===========================
   const handleSetDefault = async (id) => {
     try {
-      const res = await setDefaultAddress(id); // ✅ Call backend
+      const res = await setDefaultAddress(id);
       setAddresses(res.data.addresses);
       const def = res.data.addresses.find((a) => a.isDefault);
       if (def) setDefaultAddressId(def._id);
@@ -201,24 +170,18 @@ export default function SaveAddress({ open, setOpen }) {
     }
   };
 
-  // ===========================
-  // COMPONENT RENDER
-  // ===========================
   return (
     <div
-      className={`fixed inset-0 bg-black/40 z-50 transition-opacity duration-300 ${
-        open ? "opacity-100 visible" : "opacity-0 invisible"
-      }`}
+      className={`fixed inset-0 bg-black/40 z-50 transition-opacity duration-300 ${open ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
       onClick={() => setOpen(false)}
     >
       <div
         ref={sidebarRef}
-        className={`fixed top-0 right-0 h-full w-96 pb-36 bg-white shadow-lg transform transition-transform duration-300 ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-96 pb-36 bg-white shadow-lg transform transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"
+          }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex justify-between items-center p-5 border-b">
           <h2 className="text-xl font-bold text-blue-600">Saved Addresses</h2>
           <button className="text-3xl text-blue-600" onClick={() => setOpen(false)}>
@@ -226,9 +189,7 @@ export default function SaveAddress({ open, setOpen }) {
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-5 overflow-y-auto h-full scrollbar-hide space-y-6">
-          {/* Add Address Button */}
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
@@ -238,7 +199,6 @@ export default function SaveAddress({ open, setOpen }) {
             </button>
           )}
 
-          {/* Address Form */}
           {showForm && (
             <div className="p-4 border rounded-lg shadow space-y-3">
               <input
@@ -265,7 +225,6 @@ export default function SaveAddress({ open, setOpen }) {
                 onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
               />
 
-              {/* Country */}
               <select
                 className="w-full border rounded-lg p-2 text-black"
                 value={country}
@@ -279,7 +238,6 @@ export default function SaveAddress({ open, setOpen }) {
                 ))}
               </select>
 
-              {/* State */}
               <select
                 className="w-full border rounded-lg p-2 text-black"
                 value={state}
@@ -294,7 +252,6 @@ export default function SaveAddress({ open, setOpen }) {
                 ))}
               </select>
 
-              {/* City */}
               <select
                 className="w-full border rounded-lg p-2 text-black"
                 value={city}
@@ -333,8 +290,8 @@ export default function SaveAddress({ open, setOpen }) {
                   {loading
                     ? "Saving..."
                     : editId
-                    ? "Update Address"
-                    : "Save Address"}
+                      ? "Update Address"
+                      : "Save Address"}
                 </button>
                 <button
                   onClick={resetForm}
@@ -346,7 +303,6 @@ export default function SaveAddress({ open, setOpen }) {
             </div>
           )}
 
-          {/* Saved Addresses */}
           <div className="space-y-4">
             {addresses.length === 0 ? (
               <p className="text-gray-500 text-center">No saved addresses yet.</p>
@@ -354,11 +310,10 @@ export default function SaveAddress({ open, setOpen }) {
               addresses.map((addr) => (
                 <div
                   key={addr._id}
-                  className={`p-4 border rounded-lg shadow capitalize relative transition-colors duration-300  ${
-                    addr._id === defaultAddressId
+                  className={`p-4 border rounded-lg shadow capitalize relative transition-colors duration-300  ${addr._id === defaultAddressId
                       ? "bg-green-600"
                       : "bg-gradient-to-r from-blue-500 to-indigo-600"
-                  }`}
+                    }`}
                 >
                   <p className="font-semibold text-white">{addr.name}</p>
                   <p className="text-sm text-white">

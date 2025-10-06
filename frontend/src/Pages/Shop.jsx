@@ -5,7 +5,12 @@ import Products from "../Components/Shop/Products.jsx";
 import { FaTh, FaList, FaFilter } from "react-icons/fa";
 import data from "../Data/ProductsData.jsx";
 
-export default function Shop() {
+export default function Shop({
+  isLoggedIn,
+  username,
+  profilePic,
+  onLogout,
+}) {
   const [query, setQuery] = useState("");
   const [view, setView] = useState("grid");
   const [currentPage, setCurrentPage] = useState(1);
@@ -143,7 +148,14 @@ export default function Shop() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header query={query} setQuery={setQuery} />
+      {/* ✅ Header now includes login props (kept your search box fully intact) */}
+      <Header
+        setQuery={setQuery}
+        isLoggedIn={isLoggedIn}
+        username={username}
+        profilePic={profilePic}
+        onLogout={onLogout}
+      />
 
       {/* Top Bar */}
       <div className="flex justify-between items-center px-4 md:px-6 py-4 border-b text-blue-500 bg-gray-50 fixed top-[50px] md:top-[92px] md:left-[255px] lg:top-[90px] lg:py-4 left-0 right-0 z-40">
@@ -164,21 +176,19 @@ export default function Shop() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setView("grid")}
-              className={`p-2 rounded ${
-                view === "grid"
+              className={`p-2 rounded ${view === "grid"
                   ? "bg-black text-white"
                   : "bg-white border text-gray-600"
-              }`}
+                }`}
             >
               <FaTh />
             </button>
             <button
               onClick={() => setView("list")}
-              className={`p-2 rounded ${
-                view === "list"
+              className={`p-2 rounded ${view === "list"
                   ? "bg-black text-white"
                   : "bg-white border text-gray-600"
-              }`}
+                }`}
             >
               <FaList />
             </button>

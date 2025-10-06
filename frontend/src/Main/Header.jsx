@@ -4,7 +4,7 @@ import logo from "../assets/AQualogo.png";
 import searchIcon from "../assets/search.png";
 import { useCart } from "./Constant/AddToCart.jsx";
 import data from "../Data/ProductsData.jsx";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FiShoppingBag } from "react-icons/fi";
 import { IoPersonCircle } from "react-icons/io5";
 import { AiFillHome } from "react-icons/ai";
@@ -25,6 +25,12 @@ export default function Header({
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
 
+  const [authState, setAuthState] = useState({
+    isLoggedIn: isLoggedIn || false,
+    username: username || "",
+    profilePic: profilePic || "",
+  });
+
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
   const cartButtonRef = useRef(null);
@@ -32,12 +38,29 @@ export default function Header({
   const searchMobileRef = useRef(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { cartItems = [] } = useCart() || {};
 
   const [scrolled, setScrolled] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [filteredResults, setFilteredResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
+
+  // ✅ Restore login state on reload or page switch
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const name = localStorage.getItem("username");
+    const pic = localStorage.getItem("profilePic");
+    if (token) {
+      setAuthState({
+        isLoggedIn: true,
+        username: name || "User",
+        profilePic: pic || "",
+      });
+    } else {
+      setAuthState({ isLoggedIn: false, username: "", profilePic: "" });
+    }
+  }, [location.pathname]);
 
   // toggle helpers
   const toggleMenu = () => {
@@ -166,14 +189,23 @@ export default function Header({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // ✅ Handle logout properly everywhere
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("profilePic");
+    setAuthState({ isLoggedIn: false, username: "", profilePic: "" });
+    if (onLogout) onLogout();
+    navigate("/");
+  };
+
   return (
     <div>
       {/* header */}
       <header
         className={`fixed w-full top-0 z-50 flex items-center justify-between px-2 md:px-8 lg:px-16 transition-all duration-300
-        ${
-          scrolled ? "bg-white shadow-md py-2 md:py-3" : "bg-white py-2 md:py-3"
-        }`}
+        ${scrolled ? "bg-white shadow-md py-2 md:py-3" : "bg-white py-2 md:py-3"
+          }`}
       >
         {/* Logo */}
         <div className="flex items-center">
@@ -242,10 +274,9 @@ export default function Header({
               key={item}
               to={item === "Home" ? "/" : `/${item}`}
               className={`font-semibold md:text-sm lg:text-lg xl:text-xl transition-colors duration-300
-                ${
-                  scrolled
-                    ? "text-blue-700 hover:text-orange-500"
-                    : "text-blue-700 hover:text-blue-500"
+                ${scrolled
+                  ? "text-blue-700 hover:text-orange-500"
+                  : "text-blue-700 hover:text-blue-500"
                 }`}
             >
               {item}
@@ -339,9 +370,9 @@ export default function Header({
               className="cursor-pointer hover:text-red-600 bg-blue-500 rounded-full p-2.5 border-white border-2"
               title="Account"
             >
-              {isLoggedIn && profilePic ? (
+              {authState.isLoggedIn && authState.profilePic ? (
                 <img
-                  src={profilePic}
+                  src={authState.profilePic}
                   alt="Profile"
                   className="w-6 h-6 rounded-full object-cover"
                 />
@@ -350,7 +381,9 @@ export default function Header({
               )}
             </button>
             <span className="text-xs font-semibold pt-2 text-blue-500">
-              {isLoggedIn ? username || "User" : "Account"}
+              {authState.isLoggedIn
+                ? authState.username || "User"
+                : "Account"}
             </span>
           </div>
         </div>
@@ -411,9 +444,9 @@ export default function Header({
       <AccountSidebar
         isOpen={accountOpen}
         toggleSidebar={toggleAccount}
-        isLoggedIn={isLoggedIn}
-        username={username}
-        onLogout={onLogout}
+        isLoggedIn={authState.isLoggedIn}
+        username={authState.username}
+        onLogout={handleLogout}
       />
 
       {/* Mobile bottom nav */}
@@ -453,9 +486,9 @@ export default function Header({
           className="flex flex-col items-center text-blue-600 hover:text-red-600"
           onClick={toggleAccount}
         >
-          {isLoggedIn && profilePic ? (
+          {authState.isLoggedIn && authState.profilePic ? (
             <img
-              src={profilePic}
+              src={authState.profilePic}
               alt="Profile"
               className="w-6 h-6 rounded-full object-cover"
             />
@@ -463,7 +496,9 @@ export default function Header({
             <IoPersonCircle className="w-7 h-7" />
           )}
           <span className="text-xs font-semibold pt-1 text-blue-500">
-            {isLoggedIn ? username || "User" : "Account"}
+            {authState.isLoggedIn
+              ? authState.username || "User"
+              : "Account"}
           </span>
         </button>
       </div>

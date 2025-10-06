@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { login as loginAPI, register as registerAPI } from "../api/api.js"; // ✅ fixed import
+import { login as loginAPI, register as registerAPI } from "../api/api.js";
 
 export default function Login({ onLogin }) {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function Login({ onLogin }) {
   // Register
   const [fullName, setFullName] = useState("");
   const [regEmail, setRegEmail] = useState("");
-  const [regMobile, setRegMobile] = useState(""); // renamed to mobile
+  const [regMobile, setRegMobile] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [regConfirmPassword, setRegConfirmPassword] = useState("");
   const [showRegPassword, setShowRegPassword] = useState(false);
@@ -26,34 +26,37 @@ export default function Login({ onLogin }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const payload = {
-        email: loginEmailPhone,
-        password: loginPassword,
-      };
+      const identifier = loginEmailPhone.trim();
+      const payload = identifier.includes("@")
+        ? { email: identifier, password: loginPassword }
+        : { mobile: identifier, password: loginPassword };
 
       const res = await loginAPI(payload);
       const data = res.data || {};
-      const token = data.token || (data?.user && data.user.token) || null;
+      const token =
+        data.token || data?.user?.token || data?.accessToken || null;
       const user = data.user || data;
 
-      if (token) localStorage.setItem("token", token);
+      if (!token) throw new Error("Invalid token from server");
+
+      localStorage.setItem("token", token);
 
       const userObj = {
-        fullName: user?.fullName || user?.name || user?.username || "User",
+        fullName: user?.fullName || user?.name || "User",
         email: user?.email || "",
         phone: user?.mobile || user?.phone || "",
         profilePic: user?.profilePic || user?.avatar || null,
       };
 
       localStorage.setItem("user", JSON.stringify(userObj));
-      onLogin(userObj, token);
+      onLogin?.(userObj, token);
       navigate("/");
     } catch (err) {
       console.error("Login error:", err);
       const message =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
-        "Login failed. Check credentials.";
+        "Login failed. Please check your credentials.";
       alert(message);
     }
   };
@@ -68,32 +71,29 @@ export default function Login({ onLogin }) {
       const payload = {
         fullName,
         email: regEmail,
-        mobile: regMobile, // renamed key to match backend
+        mobile: regMobile,
         password: regPassword,
       };
 
       const res = await registerAPI(payload);
       const data = res.data || {};
 
-      const token = data.token || null;
-      const user = data.user || null;
+      const token =
+        data.token || data?.user?.token || data?.accessToken || null;
+      const user = data.user || data;
 
       if (token) localStorage.setItem("token", token);
 
-      if (user) {
-        const userObj = {
-          fullName: user.fullName || user.name || fullName,
-          email: user.email || regEmail,
-          phone: user.mobile || regMobile,
-          profilePic: user.profilePic || null,
-        };
-        localStorage.setItem("user", JSON.stringify(userObj));
-        onLogin(userObj, token);
-        navigate("/");
-      } else {
-        alert("Registration successful! Please login.");
-        setIsFlipped(false);
-      }
+      const userObj = {
+        fullName: user?.fullName || fullName,
+        email: user?.email || regEmail,
+        phone: user?.mobile || regMobile,
+        profilePic: user?.profilePic || null,
+      };
+
+      localStorage.setItem("user", JSON.stringify(userObj));
+      onLogin?.(userObj, token);
+      navigate("/");
     } catch (err) {
       console.error("Register error:", err);
       const message =

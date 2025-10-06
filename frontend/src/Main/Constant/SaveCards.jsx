@@ -7,7 +7,7 @@ import {
   setDefaultCard,
 } from "../../api/api.js";
 
-export default function SaveCards({ open, setOpen }) {
+export default function SaveCards({ open, setOpen, onSelect }) {
   const sidebarRef = useRef(null);
   const [cards, setCards] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -191,16 +191,14 @@ export default function SaveCards({ open, setOpen }) {
 
   return (
     <div
-      className={`fixed inset-0 bg-black/40 z-50 transition-opacity ${
-        open ? "opacity-100 visible" : "opacity-0 invisible"
-      }`}
+      className={`fixed inset-0 bg-black/40 z-50 transition-opacity ${open ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
       onClick={() => setOpen(false)}
     >
       <div
         ref={sidebarRef}
-        className={`fixed top-0 right-0 h-full w-96 pb-36  bg-white shadow-lg transform transition-transform duration-300 ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-96 pb-36 bg-white shadow-lg transform transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"
+          }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center p-5 border-b">
@@ -297,11 +295,10 @@ export default function SaveCards({ open, setOpen }) {
               cards.map((card) => (
                 <div
                   key={card._id}
-                  className={`p-4 border rounded-lg shadow text-white relative transition-colors duration-300 ${
-                    card.isDefault
+                  className={`p-4 border rounded-lg shadow text-white relative transition-colors duration-300 ${card.isDefault
                       ? "bg-green-600 from-green-500 to-green-700"
                       : "bg-gradient-to-r from-blue-500 to-indigo-600"
-                  }`}
+                    }`}
                 >
                   <p className="font-semibold text-lg">
                     {card.brand || "Card"}
@@ -318,9 +315,9 @@ export default function SaveCards({ open, setOpen }) {
                       Exp:{" "}
                       {card.expiryMonth && card.expiryYear
                         ? `${String(card.expiryMonth).padStart(
-                            2,
-                            "0"
-                          )}/${String(card.expiryYear).slice(-2)}`
+                          2,
+                          "0"
+                        )}/${String(card.expiryYear).slice(-2)}`
                         : "N/A"}
                     </span>
                     {card.isDefault && (
@@ -332,10 +329,7 @@ export default function SaveCards({ open, setOpen }) {
 
                   <div className="flex justify-between items-center mt-2">
                     <p className="text-sm">
-                      CVV:{" "}
-                      <span className="font-mono">
-                        {getDisplayCVV(card._id)}
-                      </span>
+                      CVV: <span className="font-mono">{getDisplayCVV(card._id)}</span>
                     </p>
                     <button
                       onClick={() => toggleCVV(card._id)}

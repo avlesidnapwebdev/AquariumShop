@@ -1,6 +1,6 @@
-// src/App.jsx
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Routes, Route } from "react-router-dom";
+import { useAuth } from "./context/UserContest.jsx";
 
 // Pages
 import Home from "./Pages/Home.jsx";
@@ -15,138 +15,134 @@ import BuyNow from "./Pages/BuyNow.jsx";
 import CheckOut from "./Pages/CheckOut.jsx";
 import Order from "./Pages/Order.jsx";
 
-// API
-import { getProfile } from "./api/api.js";
+export default function App() {
+  const { user, token, login, logout } = useAuth();
+  const isLoggedIn = !!token;
 
-function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState({
-    fullName: "Guest",
-    email: "",
-    phone: "",
-    profilePic: null,
-  });
-
-  /* =====================================================
-     ✅ Handle login success
-     - Save token and user data
-     ===================================================== */
-  const handleLogin = (userData, token) => {
-    if (token) {
-      localStorage.setItem("token", token);
-      setIsLoggedIn(true);
-    }
-
-    if (userData) {
-      localStorage.setItem("user", JSON.stringify(userData));
-      setUser(userData);
-    } else {
-      setUser((prev) => ({ ...prev, fullName: "User" }));
-    }
-  };
-
-  /* =====================================================
-     ✅ Handle logout
-     ===================================================== */
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setIsLoggedIn(false);
-    setUser({
-      fullName: "Guest",
-      email: "",
-      phone: "",
-      profilePic: null,
-    });
-  };
-
-  /* =====================================================
-     ✅ Restore session on page load
-     ===================================================== */
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
-
-    if (token) {
-      setIsLoggedIn(true);
-
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch {
-          // ignore parse error
-        }
-      } else {
-        // Fetch profile from backend if not saved locally
-        getProfile()
-          .then((res) => {
-            const profile = res.data;
-            const userData = {
-              fullName: profile?.fullName || profile?.name || "User",
-              email: profile?.email || "",
-              phone: profile?.phone || profile?.mobile || "",
-              profilePic: profile?.profilePic || profile?.avatar || null,
-            };
-            setUser(userData);
-            localStorage.setItem("user", JSON.stringify(userData));
-          })
-          .catch((err) => {
-            console.error("Failed to fetch profile:", err);
-            handleLogout();
-          });
-      }
-    }
-  }, []);
-
-  /* =====================================================
-     ✅ ROUTES
-     ===================================================== */
   return (
     <Routes>
+      {/* Home */}
       <Route
         path="/"
         element={
           <Home
             isLoggedIn={isLoggedIn}
-            username={user.fullName}
-            profilePic={user.profilePic}
-            onLogout={handleLogout}
+            username={user?.fullName}
+            profilePic={user?.profilePic}
+            onLogout={logout}
           />
         }
       />
 
+      {/* Shop */}
+      <Route
+        path="/shop"
+        element={
+          <Shop
+            isLoggedIn={isLoggedIn}
+            username={user?.fullName}
+            profilePic={user?.profilePic}
+            onLogout={logout}
+          />
+        }
+      />
+
+      {/* Wishlist */}
+      <Route
+        path="/wishlist"
+        element={
+          <Wishlist
+            isLoggedIn={isLoggedIn}
+            username={user?.fullName}
+            profilePic={user?.profilePic}
+            onLogout={logout}
+          />
+        }
+      />
+
+      {/* Order Tracking */}
+      <Route
+        path="/ordertracking"
+        element={
+          <OrderTracking
+            isLoggedIn={isLoggedIn}
+            username={user?.fullName}
+            profilePic={user?.profilePic}
+            onLogout={logout}
+          />
+        }
+      />
+
+      {/* FAQ */}
+      <Route
+        path="/faq"
+        element={
+          <FAQ
+            isLoggedIn={isLoggedIn}
+            username={user?.fullName}
+            profilePic={user?.profilePic}
+            onLogout={logout}
+          />
+        }
+      />
+
+      {/* Buy Now */}
+      <Route
+        path="/buy-now"
+        element={
+          <BuyNow
+            isLoggedIn={isLoggedIn}
+            username={user?.fullName}
+            profilePic={user?.profilePic}
+            onLogout={logout}
+          />
+        }
+      />
+
+      {/* Checkout */}
+      <Route
+        path="/checkout"
+        element={
+          <CheckOut
+            isLoggedIn={isLoggedIn}
+            username={user?.fullName}
+            profilePic={user?.profilePic}
+            onLogout={logout}
+          />
+        }
+      />
+
+      {/* Orders */}
+      <Route
+        path="/order"
+        element={
+          <Order
+            isLoggedIn={isLoggedIn}
+            username={user?.fullName}
+            profilePic={user?.profilePic}
+            onLogout={logout}
+          />
+        }
+      />
+
+      {/* Product Page */}
       <Route
         path="/product/:id"
         element={
           <ProductPage
             isLoggedIn={isLoggedIn}
-            username={user.fullName}
-            profilePic={user.profilePic}
-            onLogout={handleLogout}
+            username={user?.fullName}
+            profilePic={user?.profilePic}
+            onLogout={logout}
           />
         }
       />
 
-      <Route path="/buy-now" element={<BuyNow />} />
-      <Route path="/shop" element={<Shop />} />
-      <Route path="/ordertracking" element={<OrderTracking />} />
-      <Route path="/faq" element={<FAQ />} />
-      <Route path="/wishlist" element={<Wishlist />} />
-      <Route path="/checkout" element={<CheckOut />} />
-      <Route path="/order" element={<Order />} />
-
       {/* Login */}
-      <Route
-        path="/login"
-        element={
-          <Login onLogin={(userData, token) => handleLogin(userData, token)} />
-        }
-      />
+      <Route path="/login" element={<Login onLogin={login} />} />
 
-      {/* 404 Not Found */}
+      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
-
-export default App;

@@ -1,23 +1,29 @@
-// src/main.jsx OR src/index.jsx (whichever you use as entry point)
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
-import App from "./App.jsx";
+
+// Context Providers
+import { AuthProvider } from "./context/UserContest.jsx";
 import { CartProvider } from "./Main/Constant/AddToCart.jsx";
 import { WishlistProvider } from "./Main/Constant/Wishlist.jsx";
-import { OrderProvider } from "./Main/Constant/Order.jsx"; // ✅ import
+import { OrderProvider } from "./Main/Constant/Order.jsx";
+
+// Main App
+import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <CartProvider>
-      <WishlistProvider>
-        <OrderProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </OrderProvider>
-      </WishlistProvider>
-    </CartProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <OrderProvider>
+              <App />
+            </OrderProvider>
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </React.StrictMode>
 );
