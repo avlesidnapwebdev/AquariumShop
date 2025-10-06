@@ -106,6 +106,33 @@ export const updateAddress = async (req, res) => {
 };
 
 /* ===========================
+   ✅ Set Default Address
+   =========================== */
+export const setDefaultAddress = async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const address = user.addresses.id(addressId);
+    if (!address) return res.status(404).json({ message: "Address not found" });
+
+    // Reset all addresses to non-default
+    user.addresses.forEach((a) => (a.isDefault = false));
+
+    // Set selected one as default
+    address.isDefault = true;
+
+    await user.save();
+    res.json({ message: "Default address updated", addresses: user.addresses });
+  } catch (err) {
+    console.error("Set default address error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+/* ===========================
    ✅ Remove Address
    =========================== */
 export const removeAddress = async (req, res) => {

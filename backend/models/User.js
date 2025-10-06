@@ -14,6 +14,7 @@ const AddressSchema = new mongoose.Schema({
   state: String,
   pincode: String,
   country: { type: String, default: "India" },
+  isDefault: { type: Boolean, default: false }, // ✅ NEW FIELD
 });
 
 /* ===========================

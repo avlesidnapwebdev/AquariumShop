@@ -1,7 +1,7 @@
 import axios from "axios";
 
 /* ============================================================
-   ✅ BASE URL CONFIGURATION (Vite-compatible)
+   ✅ BASE URL CONFIGURATION (Vite/React-compatible)
 ============================================================ */
 const envUrl = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL;
 const normalizeBase = (url) => {
@@ -20,7 +20,7 @@ const API = axios.create({
 });
 
 /* ============================================================
-   ✅ REQUEST INTERCEPTOR
+   ✅ REQUEST INTERCEPTOR (Attach JWT)
 ============================================================ */
 API.interceptors.request.use(
   (config) => {
@@ -34,7 +34,7 @@ API.interceptors.request.use(
 );
 
 /* ============================================================
-   ✅ RESPONSE INTERCEPTOR
+   ✅ RESPONSE INTERCEPTOR (Handle 401)
 ============================================================ */
 API.interceptors.response.use(
   (response) => response,
@@ -57,8 +57,8 @@ API.interceptors.response.use(
 ============================================================ */
 export const register = (data) => API.post("/auth/register", data);
 export const login = (data) => API.post("/auth/login", data);
-export const registerAPI = register; // alias
-export const loginAPI = login;       // alias
+export const registerAPI = register;
+export const loginAPI = login;
 
 /* ============================================================
    ✅ PRODUCT ENDPOINTS
@@ -99,10 +99,7 @@ export const verifyRazorpayPayment = (data) =>
 /* ============================================================
    ✅ USER ENDPOINTS
 ============================================================ */
-// ✅ Primary profile endpoint
 export const getProfile = () => API.get("/users/profile");
-
-// ✅ Alias for backward compatibility (fix EditProfile.jsx)
 export const getProfileAPI = getProfile;
 
 export const updateProfile = (formData) =>
@@ -121,6 +118,8 @@ export const updateProfileAPI = (formData, token) =>
 export const addAddress = (data) => API.post("/users/addresses", data);
 export const updateAddress = (id, data) => API.put(`/users/addresses/${id}`, data);
 export const removeAddress = (id) => API.delete(`/users/addresses/${id}`);
+export const setDefaultAddress = (addressId) =>
+  API.put(`/users/addresses/default/${addressId}`); // ✅ fixed export
 
 /* ============================================================
    ✅ CARDS
@@ -128,7 +127,6 @@ export const removeAddress = (id) => API.delete(`/users/addresses/${id}`);
 export const addCard = (data) => API.post("/users/cards", data);
 export const removeCard = (id) => API.delete(`/users/cards/${id}`);
 export const setDefaultCard = (cardId) => API.put(`/users/cards/default/${cardId}`);
-
 export const deleteUser = () => API.delete("/users");
 
 /* ============================================================

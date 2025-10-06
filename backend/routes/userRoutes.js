@@ -9,10 +9,11 @@ import {
   addAddress,
   updateAddress,
   removeAddress,
+  setDefaultAddress, // ✅ Added this
   addCard,
   removeCard,
-  setDefaultCard, // ✅ import the new controller
-  deleteUser
+  setDefaultCard,
+  deleteUser,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -22,7 +23,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, "../uploads/")),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 const upload = multer({ storage });
 
@@ -38,13 +39,15 @@ router.put("/profile", protect, upload.single("profilePic"), updateProfile);
 router.post("/addresses", protect, addAddress);
 router.put("/addresses/:addressId", protect, updateAddress);
 router.delete("/addresses/:addressId", protect, removeAddress);
+router.put("/addresses/default/:addressId", protect, setDefaultAddress);
+
 
 // =======================
 // CARD ROUTES
 // =======================
 router.post("/cards", protect, addCard);
 router.delete("/cards/:cardId", protect, removeCard);
-router.put("/cards/default/:cardId", protect, setDefaultCard); // ✅ NEW: set default card
+router.put("/cards/default/:cardId", protect, setDefaultCard);
 
 // =======================
 // DELETE ACCOUNT

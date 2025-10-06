@@ -306,7 +306,7 @@ export default function SaveCards({ open, setOpen }) {
                   <p className="font-semibold text-lg">
                     {card.brand || "Card"}
                   </p>
-                  <p className="text-sm italic text-gray-200">
+                  <p className="text-sm italic text-gray-200 uppercase">
                     {card.name || "Card Holder"}
                   </p>
                   <p className="tracking-widest text-xl mt-1">
