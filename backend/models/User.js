@@ -17,11 +17,12 @@ const AddressSchema = new mongoose.Schema({
 });
 
 /* ===========================
-   ✅ Card Schema (Supports CVV + Name + Mask)
+   ✅ Card Schema (Store masked number only)
    =========================== */
 const CardSchema = new mongoose.Schema({
   providerToken: { type: String, required: true },
   brand: { type: String, required: true }, // e.g., Visa, Mastercard
+  cardNumber: { type: String, required: true }, // masked number (only last 4 stored)
   last4: { type: String, required: true },
   expiryMonth: { type: Number, required: true },
   expiryYear: { type: Number, required: true },
@@ -30,13 +31,11 @@ const CardSchema = new mongoose.Schema({
     enum: ["Credit", "Debit", "Prepaid", "UPI", "Other"],
     default: "Credit",
   },
-  cvv: { type: String, required: true, select: true },
+  cvv: { type: String, required: true }, // masked CVV
   isDefault: { type: Boolean, default: false },
-  name: { type: String, required: true, default: "Card Holder" }, // ✅ Fixed
+  name: { type: String, required: true, default: "Card Holder" },
   createdAt: { type: Date, default: Date.now },
 });
-
-
 
 /* ===========================
    ✅ User Schema

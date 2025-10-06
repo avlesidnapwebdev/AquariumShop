@@ -5,7 +5,9 @@ import Order from "../models/Order.js";
 import fs from "fs/promises";
 import path from "path";
 
-/* Helper to safely remove a file */
+/* ===========================
+   🧹 Helper to safely remove a file
+   =========================== */
 const removeFile = async (filePath) => {
   try {
     await fs.unlink(filePath);
@@ -15,14 +17,23 @@ const removeFile = async (filePath) => {
 };
 
 /* ===========================
-   ✅ Get Profile
+   ✅ Get Profile (with masked card numbers)
    =========================== */
 export const getProfile = async (req, res) => {
   try {
     const { password, ...userData } = req.user.toObject();
+
+    // Mask card numbers before sending
+    if (userData.cards) {
+      userData.cards = userData.cards.map((c) => ({
+        ...c,
+        cardNumber: "************" + c.last4,
+      }));
+    }
+
     res.json(userData);
   } catch (err) {
-    console.error(err);
+    console.error("Get profile error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -52,7 +63,7 @@ export const updateProfile = async (req, res) => {
     const { password, ...userData } = user.toObject();
     res.json({ message: "Profile updated", ...userData });
   } catch (err) {
-    console.error(err);
+    console.error("Update profile error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -67,6 +78,7 @@ export const addAddress = async (req, res) => {
     await user.save();
     res.json({ message: "Address added", addresses: user.addresses });
   } catch (err) {
+    console.error("Add address error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -78,13 +90,17 @@ export const updateAddress = async (req, res) => {
   try {
     const { addressId } = req.params;
     const user = await User.findById(req.user._id);
-    const idx = user.addresses.findIndex(a => a._id.toString() === addressId);
-    if (idx === -1) return res.status(404).json({ message: "Address not found" });
+    const idx = user.addresses.findIndex(
+      (a) => a._id.toString() === addressId
+    );
+    if (idx === -1)
+      return res.status(404).json({ message: "Address not found" });
 
     user.addresses[idx] = { ...user.addresses[idx].toObject(), ...req.body };
     await user.save();
     res.json({ message: "Address updated", addresses: user.addresses });
   } catch (err) {
+    console.error("Update address error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -96,17 +112,79 @@ export const removeAddress = async (req, res) => {
   try {
     const { addressId } = req.params;
     const user = await User.findById(req.user._id);
-    user.addresses = user.addresses.filter(a => a._id.toString() !== addressId);
+    user.addresses = user.addresses.filter(
+      (a) => a._id.toString() !== addressId
+    );
     await user.save();
     res.json({ message: "Address removed", addresses: user.addresses });
   } catch (err) {
+    console.error("Remove address error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+/* ===========================
+   ✅ Add Card (masked storage only)
+   =========================== */
+export const addCard = async (req, res) => {
+  try {
+    const {
+      providerToken,
+      brand,
+      cardNumber,
+      expiryMonth,
+      expiryYear,
+      isDefault,
+      cardType,
+      name,
+      cvv,
+    } = req.body;
+
+    if (!cardNumber || cardNumber.length !== 16) {
+      return res.status(400).json({ message: "Invalid card number" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Make sure existing cards are preserved
+    if (isDefault) user.cards.forEach((c) => (c.isDefault = false));
+
+    // Store only last 4 + masked number (no real 16-digit)
+    const maskedNumber = "************" + cardNumber.slice(-4);
+    const maskedCVV = cvv ? cvv.replace(/\d/g, "*") : "***";
+
+    const newCard = {
+      providerToken,
+      brand,
+      cardNumber: maskedNumber, // masked
+      last4: cardNumber.slice(-4),
+      expiryMonth,
+      expiryYear,
+      cardType: cardType || "Debit",
+      isDefault: !!isDefault,
+      name: name || "Card Holder",
+      cvv: maskedCVV,
+    };
+
+    user.cards.push(newCard);
+    await user.save();
+
+    const maskedCards = user.cards.map((c) => ({
+      ...c.toObject(),
+      cardNumber: "************" + c.last4,
+    }));
+
+    res.json({ message: "Card added", cards: maskedCards });
+  } catch (err) {
+    console.error("Add card error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
 /* ===========================
    ✅ Set Default Card
-=========================== */
+   =========================== */
 export const setDefaultCard = async (req, res) => {
   try {
     const { cardId } = req.params;
@@ -116,67 +194,19 @@ export const setDefaultCard = async (req, res) => {
     const card = user.cards.id(cardId);
     if (!card) return res.status(404).json({ message: "Card not found" });
 
-    // Unset previous default
     user.cards.forEach((c) => (c.isDefault = false));
-
-    // Set selected card as default
     card.isDefault = true;
 
     await user.save();
-    res.json({ message: "Default card updated", cards: user.cards });
+
+    const maskedCards = user.cards.map((c) => ({
+      ...c.toObject(),
+      cardNumber: "************" + c.last4,
+    }));
+
+    res.json({ message: "Default card updated", cards: maskedCards });
   } catch (err) {
     console.error("Set default card error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-
-/* ===========================
-   ✅ Add Card (safe version)
-   =========================== */
-export const addCard = async (req, res) => {
-  try {
-    const {
-      providerToken,
-      brand,
-      last4,
-      expiryMonth,
-      expiryYear,
-      isDefault,
-      cardType,
-      name,
-      cvv
-    } = req.body;
-
-    // ❌ Reject if someone tries to send full card number
-    if (req.body.cardNumber) {
-      return res.status(400).json({ message: "Do not send full card number to server" });
-    }
-
-    // ✅ Mask CVV (store only masked or short form)
-    const maskedCVV = cvv ? cvv.replace(/\d/g, "*") : "";
-
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    if (isDefault) user.cards.forEach(c => (c.isDefault = false));
-
-    user.cards.push({
-      providerToken,
-      brand,
-      last4,
-      expiryMonth,
-      expiryYear,
-      cardType: cardType || "Debit",
-      isDefault: !!isDefault,
-      name: name || "",
-      cvv: maskedCVV, // ✅ safely stored masked value
-    });
-
-    await user.save();
-    res.json({ message: "Card added", cards: user.cards });
-  } catch (err) {
-    console.error("Add card error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -188,10 +218,17 @@ export const removeCard = async (req, res) => {
   try {
     const { cardId } = req.params;
     const user = await User.findById(req.user._id);
-    user.cards = user.cards.filter(c => c._id.toString() !== cardId);
+    user.cards = user.cards.filter((c) => c._id.toString() !== cardId);
     await user.save();
-    res.json({ message: "Card removed", cards: user.cards });
+
+    const maskedCards = user.cards.map((c) => ({
+      ...c.toObject(),
+      cardNumber: "************" + c.last4,
+    }));
+
+    res.json({ message: "Card removed", cards: maskedCards });
   } catch (err) {
+    console.error("Remove card error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -219,7 +256,7 @@ export const deleteUser = async (req, res) => {
     await user.deleteOne();
     res.json({ message: "User and related data removed" });
   } catch (err) {
-    console.error(err);
+    console.error("Delete user error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

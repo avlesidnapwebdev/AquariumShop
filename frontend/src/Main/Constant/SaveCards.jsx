@@ -20,7 +20,9 @@ export default function SaveCards({ open, setOpen }) {
   const [cardType, setCardType] = useState("");
 
   const [visibleCVV, setVisibleCVV] = useState({});
+  const [visibleCard, setVisibleCard] = useState({});
   const [localCvvs, setLocalCvvs] = useState({});
+  const [localNumbers, setLocalNumbers] = useState({});
 
   const cardOptions = [
     "Visa Debit Card",
@@ -51,11 +53,18 @@ export default function SaveCards({ open, setOpen }) {
         setCards(fetchedCards);
 
         const savedCVVs = JSON.parse(localStorage.getItem("cvv_map") || "{}");
+        const savedNums = JSON.parse(localStorage.getItem("card_map") || "{}");
         const updatedCVVs = { ...savedCVVs };
+        const updatedNums = { ...savedNums };
+
         fetchedCards.forEach((card) => {
           if (!(card._id in updatedCVVs)) updatedCVVs[card._id] = "***";
+          if (!(card._id in updatedNums))
+            updatedNums[card._id] = "************" + card.last4;
         });
+
         setLocalCvvs(updatedCVVs);
+        setLocalNumbers(updatedNums);
       } catch (err) {
         console.error("Error fetching cards:", err);
       }
@@ -74,11 +83,12 @@ export default function SaveCards({ open, setOpen }) {
     const newCard = {
       providerToken: `mock-${Date.now()}`,
       brand: cardType,
+      cardNumber,
       last4: cardNumber.slice(-4),
       expiryMonth: Number(month),
       expiryYear: Number(year),
       isDefault: false,
-      name: cardName.trim(), // ensure no leading/trailing spaces
+      name: cardName.trim(),
       cvv,
     };
 
@@ -90,9 +100,12 @@ export default function SaveCards({ open, setOpen }) {
 
       const lastCard = updated[updated.length - 1];
       if (lastCard && lastCard._id) {
-        const map = { ...(localCvvs || {}), [lastCard._id]: cvv };
-        localStorage.setItem("cvv_map", JSON.stringify(map));
-        setLocalCvvs(map);
+        const mapCVV = { ...(localCvvs || {}), [lastCard._id]: cvv };
+        const mapNum = { ...(localNumbers || {}), [lastCard._id]: cardNumber };
+        localStorage.setItem("cvv_map", JSON.stringify(mapCVV));
+        localStorage.setItem("card_map", JSON.stringify(mapNum));
+        setLocalCvvs(mapCVV);
+        setLocalNumbers(mapNum);
       }
 
       setShowForm(false);
@@ -117,10 +130,14 @@ export default function SaveCards({ open, setOpen }) {
       const { data } = await removeCard(id);
       setCards(data.cards || []);
 
-      const map = { ...(localCvvs || {}) };
-      delete map[id];
-      localStorage.setItem("cvv_map", JSON.stringify(map));
-      setLocalCvvs(map);
+      const cvvMap = { ...(localCvvs || {}) };
+      const numMap = { ...(localNumbers || {}) };
+      delete cvvMap[id];
+      delete numMap[id];
+      localStorage.setItem("cvv_map", JSON.stringify(cvvMap));
+      localStorage.setItem("card_map", JSON.stringify(numMap));
+      setLocalCvvs(cvvMap);
+      setLocalNumbers(numMap);
     } catch (err) {
       console.error("Error deleting card:", err);
     } finally {
@@ -128,9 +145,11 @@ export default function SaveCards({ open, setOpen }) {
     }
   };
 
-  const toggleCVV = (id) => {
+  const toggleCVV = (id) =>
     setVisibleCVV((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+
+  const toggleCardNum = (id) =>
+    setVisibleCard((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const handleExpiryChange = (e) => {
     let val = e.target.value.replace(/\D/g, "");
@@ -143,6 +162,13 @@ export default function SaveCards({ open, setOpen }) {
     const show = visibleCVV[id];
     if (!stored || stored === "***") return "***";
     return show ? stored : "•••";
+  };
+
+  const getDisplayCardNumber = (card) => {
+    const stored = localNumbers[card._id];
+    const show = visibleCard[card._id];
+    if (!stored) return "************" + card.last4;
+    return show ? stored : "************" + card.last4;
   };
 
   const handleSetDefault = async (id) => {
@@ -172,7 +198,7 @@ export default function SaveCards({ open, setOpen }) {
     >
       <div
         ref={sidebarRef}
-        className={`fixed top-0 right-0 h-full w-96 bg-white shadow-lg transform transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-96 pb-36  bg-white shadow-lg transform transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -204,7 +230,7 @@ export default function SaveCards({ open, setOpen }) {
                 placeholder="Card Holder Name"
                 value={cardName}
                 onChange={(e) => setCardName(e.target.value)}
-                className="w-full border rounded-lg p-2" // removed uppercase
+                className="w-full border rounded-lg p-2"
               />
               <input
                 type="text"
@@ -284,8 +310,9 @@ export default function SaveCards({ open, setOpen }) {
                     {card.name || "Card Holder"}
                   </p>
                   <p className="tracking-widest text-xl mt-1">
-                    **** **** **** {card.last4}
+                    {getDisplayCardNumber(card)}
                   </p>
+
                   <div className="flex justify-between text-sm mt-1">
                     <span>
                       Exp:{" "}
@@ -314,19 +341,27 @@ export default function SaveCards({ open, setOpen }) {
                       onClick={() => toggleCVV(card._id)}
                       className="text-xs underline text-gray-200"
                     >
-                      {visibleCVV[card._id] ? "Hide" : "Show"}
+                      {visibleCVV[card._id] ? "Hide CVV" : "Show CVV"}
                     </button>
                   </div>
 
-                  {!card.isDefault && (
+                  <div className="flex justify-between items-center mt-1">
                     <button
-                      onClick={() => handleSetDefault(card._id)}
-                      disabled={loading}
-                      className="mt-2 bg-yellow-500 text-black px-2 py-1 text-xs rounded"
+                      onClick={() => toggleCardNum(card._id)}
+                      className="text-xs underline text-gray-200"
                     >
-                      Set as Default
+                      {visibleCard[card._id] ? "Hide Number" : "Show Number"}
                     </button>
-                  )}
+                    {!card.isDefault && (
+                      <button
+                        onClick={() => handleSetDefault(card._id)}
+                        disabled={loading}
+                        className="bg-yellow-500 text-black px-2 py-1 text-xs rounded"
+                      >
+                        Set Default
+                      </button>
+                    )}
+                  </div>
 
                   <button
                     onClick={() => handleDeleteCard(card._id)}
