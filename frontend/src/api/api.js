@@ -90,9 +90,11 @@ export const updateOrderStatus = (id, status) =>
 
 /* ============================================================
    ✅ PAYMENT (Razorpay) ENDPOINTS
+   - Updated to accept correct payload: items, amount, addressId, cardId
 ============================================================ */
-export const createRazorpayOrder = (orderId) =>
-  API.post("/payments/razorpay/create", { orderId });
+export const createRazorpayOrder = (data) =>
+  API.post("/payments/razorpay/create", data);
+
 export const verifyRazorpayPayment = (data) =>
   API.post("/payments/razorpay/verify", data);
 
@@ -119,7 +121,7 @@ export const addAddress = (data) => API.post("/users/addresses", data);
 export const updateAddress = (id, data) => API.put(`/users/addresses/${id}`, data);
 export const removeAddress = (id) => API.delete(`/users/addresses/${id}`);
 export const setDefaultAddress = (addressId) =>
-  API.put(`/users/addresses/default/${addressId}`); // ✅ fixed export
+  API.put(`/users/addresses/default/${addressId}`);
 
 /* ============================================================
    ✅ CARDS

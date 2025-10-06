@@ -32,6 +32,9 @@ export default function SaveAddress({ open, setOpen, onSelect }) {
   const [allCities, setAllCities] = useState([]);
   const [defaultAddressId, setDefaultAddressId] = useState(null);
 
+  const [selectedId, setSelectedId] = useState(null); // ✅ Track selected address
+
+  // Fetch addresses when sidebar opens
   useEffect(() => {
     if (open) fetchAddresses();
   }, [open]);
@@ -49,10 +52,12 @@ export default function SaveAddress({ open, setOpen, onSelect }) {
     }
   };
 
+  // Load countries
   useEffect(() => {
     setAllCountries(Country.getAllCountries());
   }, []);
 
+  // Update states when country changes
   useEffect(() => {
     if (country) {
       const selected = allCountries.find((c) => c.name === country);
@@ -63,6 +68,7 @@ export default function SaveAddress({ open, setOpen, onSelect }) {
     }
   }, [country]);
 
+  // Update cities when state changes
   useEffect(() => {
     if (state && country) {
       const selectedCountry = allCountries.find((c) => c.name === country);
@@ -76,6 +82,7 @@ export default function SaveAddress({ open, setOpen, onSelect }) {
     }
   }, [state]);
 
+  // Close sidebar when clicking outside
   useEffect(() => {
     const handleClick = (e) => {
       if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
@@ -112,8 +119,8 @@ export default function SaveAddress({ open, setOpen, onSelect }) {
       country,
       state,
       city,
-      addressLine1: `${house}`,
-      addressLine2: `${road}`,
+      addressLine1: house,
+      addressLine2: road,
     };
 
     setLoading(true);
@@ -153,6 +160,7 @@ export default function SaveAddress({ open, setOpen, onSelect }) {
       const res = await removeAddress(id);
       setAddresses(res.data.addresses);
       if (id === defaultAddressId) setDefaultAddressId(null);
+      if (id === selectedId) setSelectedId(null); // ✅ Clear selected if deleted
     } catch (err) {
       console.error("Delete address failed:", err);
     }
@@ -168,6 +176,11 @@ export default function SaveAddress({ open, setOpen, onSelect }) {
       console.error("Set default address failed:", err);
       alert("Failed to set default address");
     }
+  };
+
+  const handleSelect = (addr) => {
+    setSelectedId(addr._id); // ✅ Update selected ID
+    if (onSelect) onSelect(addr); // Notify parent
   };
 
   return (
@@ -287,11 +300,7 @@ export default function SaveAddress({ open, setOpen, onSelect }) {
                   disabled={loading}
                   className="flex-1 bg-green-600 text-white py-2 rounded-lg"
                 >
-                  {loading
-                    ? "Saving..."
-                    : editId
-                      ? "Update Address"
-                      : "Save Address"}
+                  {loading ? "Saving..." : editId ? "Update Address" : "Save Address"}
                 </button>
                 <button
                   onClick={resetForm}
@@ -310,10 +319,11 @@ export default function SaveAddress({ open, setOpen, onSelect }) {
               addresses.map((addr) => (
                 <div
                   key={addr._id}
-                  className={`p-4 border rounded-lg shadow capitalize relative transition-colors duration-300  ${addr._id === defaultAddressId
+                  className={`p-4 border rounded-lg shadow capitalize relative cursor-pointer transition-colors duration-300 ${addr._id === defaultAddressId
                       ? "bg-green-600"
                       : "bg-gradient-to-r from-blue-500 to-indigo-600"
-                    }`}
+                    } ${addr._id === selectedId ? "ring-4 ring-yellow-400" : ""}`}
+                  onClick={() => handleSelect(addr)}
                 >
                   <p className="font-semibold text-white">{addr.name}</p>
                   <p className="text-sm text-white">

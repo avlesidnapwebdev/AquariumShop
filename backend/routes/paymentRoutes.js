@@ -4,6 +4,7 @@ import { createRazorpayOrder, verifyRazorpayPayment } from "../controllers/payme
 
 const router = express.Router();
 
+// All routes are prefixed with /payments
 router.post("/razorpay/create", protect, createRazorpayOrder);
 router.post("/razorpay/verify", protect, verifyRazorpayPayment);
 

@@ -24,6 +24,8 @@ export default function SaveCards({ open, setOpen, onSelect }) {
   const [localCvvs, setLocalCvvs] = useState({});
   const [localNumbers, setLocalNumbers] = useState({});
 
+  const [selectedCardId, setSelectedCardId] = useState(null); // ✅ Track selected card
+
   const cardOptions = [
     "Visa Debit Card",
     "Mastercard Debit Card",
@@ -33,6 +35,7 @@ export default function SaveCards({ open, setOpen, onSelect }) {
     "Premium / Super-Premium / Elite Credit Card",
   ];
 
+  // Close sidebar when clicking outside
   useEffect(() => {
     const handleClick = (e) => {
       if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
@@ -43,6 +46,7 @@ export default function SaveCards({ open, setOpen, onSelect }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [setOpen]);
 
+  // Fetch cards when sidebar opens
   useEffect(() => {
     if (!open) return;
 
@@ -54,6 +58,7 @@ export default function SaveCards({ open, setOpen, onSelect }) {
 
         const savedCVVs = JSON.parse(localStorage.getItem("cvv_map") || "{}");
         const savedNums = JSON.parse(localStorage.getItem("card_map") || "{}");
+
         const updatedCVVs = { ...savedCVVs };
         const updatedNums = { ...savedNums };
 
@@ -100,8 +105,8 @@ export default function SaveCards({ open, setOpen, onSelect }) {
 
       const lastCard = updated[updated.length - 1];
       if (lastCard && lastCard._id) {
-        const mapCVV = { ...(localCvvs || {}), [lastCard._id]: cvv };
-        const mapNum = { ...(localNumbers || {}), [lastCard._id]: cardNumber };
+        const mapCVV = { ...localCvvs, [lastCard._id]: cvv };
+        const mapNum = { ...localNumbers, [lastCard._id]: cardNumber };
         localStorage.setItem("cvv_map", JSON.stringify(mapCVV));
         localStorage.setItem("card_map", JSON.stringify(mapNum));
         setLocalCvvs(mapCVV);
@@ -130,14 +135,16 @@ export default function SaveCards({ open, setOpen, onSelect }) {
       const { data } = await removeCard(id);
       setCards(data.cards || []);
 
-      const cvvMap = { ...(localCvvs || {}) };
-      const numMap = { ...(localNumbers || {}) };
+      const cvvMap = { ...localCvvs };
+      const numMap = { ...localNumbers };
       delete cvvMap[id];
       delete numMap[id];
       localStorage.setItem("cvv_map", JSON.stringify(cvvMap));
       localStorage.setItem("card_map", JSON.stringify(numMap));
       setLocalCvvs(cvvMap);
       setLocalNumbers(numMap);
+
+      if (id === selectedCardId) setSelectedCardId(null); // ✅ Clear selected if deleted
     } catch (err) {
       console.error("Error deleting card:", err);
     } finally {
@@ -183,10 +190,15 @@ export default function SaveCards({ open, setOpen, onSelect }) {
       setCards(updated);
     } catch (err) {
       console.error("Error setting default card:", err);
-      alert("Failed to set default card. Check API endpoint or card ID.");
+      alert("Failed to set default card");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSelectCard = (card) => {
+    setSelectedCardId(card._id); // ✅ Update selected card
+    if (onSelect) onSelect(card); // Notify parent
   };
 
   return (
@@ -211,7 +223,7 @@ export default function SaveCards({ open, setOpen, onSelect }) {
           </button>
         </div>
 
-        <div className="p-5 overflow-y-auto h-full space-y-6">
+        <div className="p-5 overflow-y-auto h-full space-y-6 scrollbar-hide">
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
@@ -295,14 +307,13 @@ export default function SaveCards({ open, setOpen, onSelect }) {
               cards.map((card) => (
                 <div
                   key={card._id}
-                  className={`p-4 border rounded-lg shadow text-white relative transition-colors duration-300 ${card.isDefault
+                  className={`p-4 border rounded-lg shadow text-white relative cursor-pointer transition-colors duration-300 ${card.isDefault
                       ? "bg-green-600 from-green-500 to-green-700"
                       : "bg-gradient-to-r from-blue-500 to-indigo-600"
-                    }`}
+                    } ${card._id === selectedCardId ? "ring-4 ring-yellow-400" : ""}`}
+                  onClick={() => handleSelectCard(card)} // ✅ handle select
                 >
-                  <p className="font-semibold text-lg">
-                    {card.brand || "Card"}
-                  </p>
+                  <p className="font-semibold text-lg">{card.brand || "Card"}</p>
                   <p className="text-sm italic text-gray-200 uppercase">
                     {card.name || "Card Holder"}
                   </p>

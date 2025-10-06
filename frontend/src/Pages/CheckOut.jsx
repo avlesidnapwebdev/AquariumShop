@@ -1,7 +1,6 @@
 // src/Components/Pages/CheckOut.jsx
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Select from "react-select";
 import Header from "../Main/Header.jsx";
 import Footer from "../Main/Footer.jsx";
 import { useCart } from "../Main/Constant/AddToCart.jsx";
@@ -67,8 +66,9 @@ export default function CheckOut() {
       return;
     }
     setLoading(true);
+
     try {
-      // 1️⃣ Create Order
+      // 1️⃣ Create Razorpay Order
       const orderResponse = await createRazorpayOrder({
         items,
         amount: subtotal,
@@ -76,20 +76,26 @@ export default function CheckOut() {
         cardId: selectedCard._id,
       });
 
-      const { order_id, amount, currency } = orderResponse.data;
+      const rOrder = orderResponse.data.rOrder;
+      const orderId = rOrder.id;
 
       // 2️⃣ Open Razorpay payment popup
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY,
-        amount: amount,
-        currency: currency,
+        amount: rOrder.amount,
+        currency: rOrder.currency,
         name: "My Shop",
-        description: "Test Transaction",
-        order_id: order_id,
+        description: "Purchase",
+        order_id: orderId,
         handler: async function (response) {
           try {
             // 3️⃣ Verify payment
-            await verifyRazorpayPayment(response);
+            await verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              ourOrderId: rOrder.receipt, // Assuming backend stores your Order ID in receipt
+            });
 
             // 4️⃣ Place Order in backend DB
             const newOrders = items.map((item) => ({
@@ -135,7 +141,7 @@ export default function CheckOut() {
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
-      console.error(err);
+      console.error("Payment initialization failed:", err);
       alert("Payment initialization failed");
     } finally {
       setLoading(false);
@@ -280,7 +286,6 @@ export default function CheckOut() {
           setCardSidebar(false);
         }}
       />
-
 
       <Footer />
     </>

@@ -1,63 +1,60 @@
-import Order from "../models/Order.js";
+import Razorpay from "razorpay";
 import crypto from "crypto";
 import dotenv from "dotenv";
+import Order from "../models/Order.js";
 
-dotenv.config(); // ensure env variables are loaded
+dotenv.config();
 
-let razor = null;
-const RAZORPAY_ENABLED = process.env.RAZORPAY_ENABLED === "true";
- 
-if (RAZORPAY_ENABLED) {
-  try {
-    const RazorpayModule = await import("razorpay");
-    const Razorpay = RazorpayModule.default;
-
-    razor = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
-
-    console.log("Razorpay initialized ✅");
-  } catch (err) {
-    console.error("Failed to initialize Razorpay:", err);
-  }
-}
+const razor = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 export const createRazorpayOrder = async (req, res) => {
-  if (!RAZORPAY_ENABLED || !razor)
-    return res.status(503).json({ message: "Payment service disabled" });
-
   try {
-    const { orderId } = req.body;
-    if (!orderId) return res.status(400).json({ message: "orderId required" });
+    const { amount, currency, items, addressId, cardId } = req.body;
 
-    const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ message: "Order not found" });
+    if (!amount || !items || !addressId || !cardId)
+      return res.status(400).json({ message: "Missing fields" });
 
+    // Create a temporary order in DB
+    const order = await Order.create({
+      user: req.user._id,
+      items,
+      totalAmount: amount,
+      addressId,
+      cardId,
+      paymentStatus: "Pending",
+    });
+
+    // Create Razorpay order
     const options = {
-      amount: Math.round(order.totalAmount * 100), // amount in paise
-      currency: "INR",
-      receipt: order.orderNumber,
+      amount: Math.round(amount * 100), // paise
+      currency: currency || "INR",
+      receipt: order._id.toString(),
     };
 
     const rOrder = await razor.orders.create(options);
+
+    // Save provider order id
     order.providerOrderId = rOrder.id;
     await order.save();
 
-    res.json({ rOrder });
+    res.json({
+      order_id: rOrder.id,
+      amount: rOrder.amount,
+      currency: rOrder.currency,
+      ourOrderId: order._id,
+    });
   } catch (err) {
-    console.error(err);
+    console.error("Razorpay create order error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
 export const verifyRazorpayPayment = async (req, res) => {
-  if (!RAZORPAY_ENABLED || !razor)
-    return res.status(503).json({ message: "Payment service disabled" });
-
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, ourOrderId } =
-      req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, ourOrderId } = req.body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !ourOrderId)
       return res.status(400).json({ message: "Missing fields" });
@@ -80,7 +77,7 @@ export const verifyRazorpayPayment = async (req, res) => {
 
     res.json({ message: "Payment verified", order });
   } catch (err) {
-    console.error(err);
+    console.error("Razorpay verify error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
