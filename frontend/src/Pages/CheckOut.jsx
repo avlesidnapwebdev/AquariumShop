@@ -1,4 +1,3 @@
-// src/Components/Pages/CheckOut.jsx
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../Main/Header.jsx";
@@ -41,10 +40,8 @@ export default function CheckOut() {
   const [addressSidebar, setAddressSidebar] = useState(false);
   const [cardSidebar, setCardSidebar] = useState(false);
 
-  // Scroll top on load
-  useEffect(() => window.scrollTo({ top: 0, left: 0, behavior: "smooth" }), []);
+  useEffect(() => window.scrollTo({ top: 0, behavior: "smooth" }), []);
 
-  // Fetch user profile (addresses + cards)
   const fetchProfile = async () => {
     try {
       const { data } = await getProfile();
@@ -59,47 +56,72 @@ export default function CheckOut() {
     fetchProfile();
   }, []);
 
-  // Handle payment
   const handlePay = async () => {
     if (!selectedCard || !selectedAddress) {
       alert("Please select an address and a card to continue!");
       return;
     }
+
+    if (!items || items.length === 0) {
+      alert("No items to purchase!");
+      return;
+    }
+
+    // ✅ Safely map items with _id or fallback to id
+    let mappedItems;
+    try {
+      mappedItems = items.map((item) => {
+        const productId = item._id?.toString() || item.id?.toString();
+        if (!productId) {
+          throw new Error(
+            `Item "${item.name || item.title}" is missing _id. Cannot proceed with payment.`
+          );
+        }
+        return {
+          productId,
+          quantity: item.qty,
+          price: item.price,
+        };
+      });
+    } catch (err) {
+      alert(err.message);
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // 1️⃣ Create Razorpay Order
+      // ✅ Create Razorpay order
       const orderResponse = await createRazorpayOrder({
-        items,
+        items: mappedItems,
         amount: subtotal,
-        addressId: selectedAddress._id,
+        address: selectedAddress,
         cardId: selectedCard._id,
       });
 
-      const rOrder = orderResponse.data.rOrder;
-      const orderId = rOrder.id;
+      const { rOrder, key, ourOrderId } = orderResponse.data;
 
-      // 2️⃣ Open Razorpay payment popup
+      // ✅ Open Razorpay payment window
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY,
+        key,
         amount: rOrder.amount,
         currency: rOrder.currency,
-        name: "My Shop",
+        name: "Aquarium Shop",
         description: "Purchase",
-        order_id: orderId,
+        order_id: rOrder.id,
         handler: async function (response) {
           try {
-            // 3️⃣ Verify payment
+            // ✅ Verify payment with backend
             await verifyRazorpayPayment({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              ourOrderId: rOrder.receipt, // Assuming backend stores your Order ID in receipt
+              ourOrderId,
             });
 
-            // 4️⃣ Place Order in backend DB
+            // ✅ Add order locally
             const newOrders = items.map((item) => ({
-              id: Date.now() + "-" + item.id,
+              id: Date.now() + "-" + (item.id || item._id),
               title: item.name || item.title,
               image: item.image,
               qty: item.qty,
@@ -111,6 +133,8 @@ export default function CheckOut() {
             }));
 
             newOrders.forEach((order) => addOrder(order));
+
+            // ✅ Place order in backend
             await placeOrder({
               items: newOrders,
               amount: subtotal,
@@ -118,9 +142,7 @@ export default function CheckOut() {
               cardId: selectedCard._id,
             });
 
-            // 5️⃣ Clear cart
             clearCart();
-
             setShowPayment(false);
             setOrderPlaced(true);
           } catch (err) {
@@ -133,16 +155,14 @@ export default function CheckOut() {
           email: selectedAddress.email || "",
           contact: selectedAddress.phone,
         },
-        theme: {
-          color: "#F97316",
-        },
+        theme: { color: "#F97316" },
       };
 
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
       console.error("Payment initialization failed:", err);
-      alert("Payment initialization failed");
+      alert(err.message || "Payment initialization failed");
     } finally {
       setLoading(false);
     }
@@ -173,8 +193,8 @@ export default function CheckOut() {
                 <p className="font-semibold">{selectedAddress.name}</p>
                 <p>
                   {selectedAddress.addressLine1}, {selectedAddress.addressLine2},{" "}
-                  {selectedAddress.city}, {selectedAddress.state}, {selectedAddress.country} -{" "}
-                  {selectedAddress.pincode}
+                  {selectedAddress.city}, {selectedAddress.state},{" "}
+                  {selectedAddress.country} - {selectedAddress.pincode}
                 </p>
                 <p>Phone: {selectedAddress.phone}</p>
               </div>
@@ -198,7 +218,7 @@ export default function CheckOut() {
             <h2 className="text-2xl font-semibold mb-4">Your order</h2>
             <div className="divide-y">
               {items.map((item) => (
-                <div key={item.id} className="flex justify-between py-2">
+                <div key={item._id || item.id} className="flex justify-between py-2">
                   <span>{item.name || item.title} (x{item.qty})</span>
                   <span>₹{(item.price * item.qty).toFixed(2)}</span>
                 </div>
