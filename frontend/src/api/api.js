@@ -25,9 +25,7 @@ const API = axios.create({
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-    if (token) {
-      config.headers = { ...config.headers, Authorization: `Bearer ${token}` };
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
@@ -39,14 +37,10 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response) {
-      if (error.response.status === 401) {
-        console.warn("Unauthorized — clearing token and redirecting to /login");
-        localStorage.removeItem("token");
-        if (typeof window !== "undefined") window.location.href = "/login";
-      }
-    } else {
-      console.error("Network/Server Error:", error.message);
+    if (error?.response?.status === 401) {
+      console.warn("Unauthorized — clearing token and redirecting to /login");
+      localStorage.removeItem("token");
+      if (typeof window !== "undefined") window.location.href = "/login";
     }
     return Promise.reject(error);
   }
@@ -73,9 +67,12 @@ export const deleteProduct = (id) => API.delete(`/products/${id}`);
    ✅ CART ENDPOINTS
 ============================================================ */
 export const getCart = () => API.get("/cart");
-export const addToCart = (productId, quantity = 1) =>
-  API.post("/cart/add", { productId, quantity });
-export const updateCartItem = (productId, quantity) =>
+export const addToCart = ({ productId, quantity = 1 }) => {
+  if (!productId) throw new Error("productId is required"); // extra safety
+  return API.post("/cart/add", { productId, quantity });
+};
+  
+export const updateCartItem = (productId, { quantity }) =>
   API.put(`/cart/item/${productId}`, { quantity });
 export const clearCart = () => API.delete("/cart/clear");
 
@@ -90,11 +87,9 @@ export const updateOrderStatus = (id, status) =>
 
 /* ============================================================
    ✅ PAYMENT (Razorpay) ENDPOINTS
-   - Updated to accept correct payload: items, amount, addressId, cardId
 ============================================================ */
 export const createRazorpayOrder = (data) =>
   API.post("/payments/razorpay/create", data);
-
 export const verifyRazorpayPayment = (data) =>
   API.post("/payments/razorpay/verify", data);
 
@@ -102,20 +97,10 @@ export const verifyRazorpayPayment = (data) =>
    ✅ USER ENDPOINTS
 ============================================================ */
 export const getProfile = () => API.get("/users/profile");
-export const getProfileAPI = getProfile;
-
+export const getProfileAPI = getProfile; // ✅ alias
 export const updateProfile = (formData) =>
-  API.put("/users/profile", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-
-export const updateProfileAPI = (formData, token) =>
-  axios.put(`${BASE}/users/profile`, formData, {
-    headers: {
-      Authorization: `Bearer ${token || localStorage.getItem("token") || ""}`,
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  API.put("/users/profile", formData, { headers: { "Content-Type": "multipart/form-data" } });
+export const updateProfileAPI = updateProfile;
 
 export const addAddress = (data) => API.post("/users/addresses", data);
 export const updateAddress = (id, data) => API.put(`/users/addresses/${id}`, data);
@@ -124,7 +109,7 @@ export const setDefaultAddress = (addressId) =>
   API.put(`/users/addresses/default/${addressId}`);
 
 /* ============================================================
-   ✅ CARDS
+   ✅ CARD ENDPOINTS
 ============================================================ */
 export const addCard = (data) => API.post("/users/cards", data);
 export const removeCard = (id) => API.delete(`/users/cards/${id}`);
@@ -136,8 +121,7 @@ export const deleteUser = () => API.delete("/users");
 ============================================================ */
 export const getWishlist = () => API.get("/wishlist");
 export const addToWishlist = (productId) => API.post("/wishlist/add", { productId });
-export const removeFromWishlist = (productId) =>
-  API.delete(`/wishlist/remove/${productId}`);
+export const removeFromWishlist = (productId) => API.delete(`/wishlist/remove/${productId}`);
 
 /* ============================================================
    ✅ DEFAULT EXPORT

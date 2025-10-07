@@ -4,6 +4,7 @@ import { getCart, addToCart, updateCartItem, clearCart } from "../controllers/ca
 
 const router = express.Router();
 
+// All routes are protected
 router.get("/", protect, getCart);
 router.post("/add", protect, addToCart);
 router.put("/item/:productId", protect, updateCartItem);

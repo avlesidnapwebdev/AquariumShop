@@ -1,3 +1,4 @@
+// src/components/AddToCartSidebar.jsx
 import React from "react";
 import { IoClose } from "react-icons/io5";
 import { FaTrash, FaHeart } from "react-icons/fa";
@@ -25,6 +26,7 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
       className={`fixed top-0 right-0 h-[90vh] w-80 bg-white shadow-lg transform transition-transform duration-300 z-50
         ${cartOpen ? "translate-x-0" : "translate-x-full"}`}
     >
+      {/* Close Button */}
       <button
         className="absolute top-4 right-4 text-2xl text-blue-600"
         onClick={toggleCart}
@@ -32,8 +34,10 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
         <IoClose />
       </button>
 
+      {/* Header */}
       <h2 className="text-xl font-bold p-6 border-b text-blue-500">My Cart</h2>
 
+      {/* Cart Items */}
       <div className="p-4 overflow-y-auto h-[calc(100%-180px)]">
         {!cartItems || cartItems.length === 0 ? (
           <p className="text-red-600">Your cart is empty</p>
@@ -60,6 +64,7 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
                   Subtotal: ₹ {Number(item.price) * Number(item.qty)}
                 </p>
 
+                {/* Add to Wishlist */}
                 <button
                   onClick={() => addToWishlist(item)}
                   className="flex items-center gap-1 text-sm mt-2 text-pink-600 hover:text-pink-800"
@@ -68,6 +73,7 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
                 </button>
               </div>
 
+              {/* Remove from Cart */}
               <button
                 onClick={() => removeFromCart(item.id)}
                 className="text-red-600 hover:text-red-800 ml-2"
@@ -79,8 +85,9 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
         )}
       </div>
 
+      {/* Footer */}
       {cartItems && cartItems.length > 0 && (
-        <div className="p-4 border-t">
+        <div className="p-4 border-t bg-white">
           <div className="flex justify-between items-center mb-3">
             <span className="font-bold text-blue-600">Total:</span>
             <span className="font-bold text-red-600 text-lg">
