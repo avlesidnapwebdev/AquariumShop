@@ -1,5 +1,5 @@
 import React from "react";
-import food7 from "../../../assets/fish/food/Foods_Banner.png";
+import food7 from "/assets/fish/food/Foods_Banner.png";
 import { Link } from "react-router-dom"; 
 
 export default function AdvertisementFood() {

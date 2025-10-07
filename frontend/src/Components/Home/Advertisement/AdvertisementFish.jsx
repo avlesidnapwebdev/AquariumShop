@@ -1,5 +1,5 @@
 import React from "react";
-import Octo from "../../../assets/fish/octo.png";
+import Octo from "/assets/fish/octo.png";
 import { Link } from "react-router-dom"; 
 
 export default function AdvertisementFish() {

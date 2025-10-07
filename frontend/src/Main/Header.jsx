@@ -1,7 +1,7 @@
 // Header.jsx
 import React, { useEffect, useState, useRef } from "react";
-import logo from "../assets/AQualogo.png";
-import searchIcon from "../assets/search.png";
+// import logo from "/assets/AQualogo.png";
+// import searchIcon from "/assets/search.png";
 import { useCart } from "./Constant/AddToCart.jsx";
 import data from "../Data/ProductsData.jsx";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -210,7 +210,7 @@ export default function Header({
         {/* Logo */}
         <div className="flex items-center">
           <Link to={"/"}>
-            <img src={logo} alt="Logo" className="w-20 md:w-28 lg:w-32" />
+            <img src="/assets/Aqualogo.png" alt="Logo" className="w-20 md:w-28 lg:w-32" />
           </Link>
         </div>
 
@@ -231,7 +231,7 @@ export default function Header({
             className="w-full h-8 rounded-full text-black px-3 border border-gray-300 outline-none text-sm"
           />
           <button className="absolute right-0.5 bg-blue-500 w-8 h-7 rounded-full flex items-center justify-center">
-            <img src={searchIcon} alt="Search" className="w-7" />
+            <img src="/assets/search.png" alt="Search" className="w-7" />
           </button>
 
           {showResults && filteredResults.length > 0 && (
@@ -302,7 +302,7 @@ export default function Header({
               bg-blue-600 text-white placeholder-white border-white`}
           />
           <button className="absolute right-0.5 bg-blue-500 w-8 h-8 rounded-full flex items-center justify-center">
-            <img src={searchIcon} alt="Search" className="w-7 text-white" />
+            <img src="/assets/search.png" alt="Search" className="w-7 text-white" />
           </button>
 
           {showResults && filteredResults.length > 0 && (

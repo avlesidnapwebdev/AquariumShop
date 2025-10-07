@@ -1,16 +1,16 @@
-import cf from "../assets/fish/fishbg/coral reef.jpg";
-import cf1 from "../assets/fish/fishbg/coral-colony.png";
-import cf2 from "../assets/fish/fishbg/coral reef 2.jpg";
-import cf3 from "../assets/fish/fishbg/coral reef3.jpg";
-import cf4 from "../assets/fish/fishbg/coral reef 4.jpg";
-import cf5 from "../assets/fish/fishbg/coral reef 5.jpg";
-import cf6 from "../assets/fish/fishbg/coral reef 6.webp";
-import cf7 from "../assets/fish/fishbg/coral reef 7.jpeg";
-import cf8 from "../assets/fish/fishbg/coral reef 8.jpeg";
-import cf9 from "../assets/fish/fishbg/coral reef 9.jpg";
-import cf10 from "../assets/fish/fishbg/coral reef 10.jpg";
-import cf11 from "../assets/fish/fishbg/coral reef 11.jpg";
-import cf12 from "../assets/fish/fishbg/coral reef 12.webp";
+import cf from "/assets/fish/fishbg/coral reef.jpg";
+import cf1 from "/assets/fish/fishbg/coral-colony.png";
+import cf2 from "/assets/fish/fishbg/coral reef 2.jpg";
+import cf3 from "/assets/fish/fishbg/coral reef3.jpg";
+import cf4 from "/assets/fish/fishbg/coral reef 4.jpg";
+import cf5 from "/assets/fish/fishbg/coral reef 5.jpg";
+import cf6 from "/assets/fish/fishbg/coral reef 6.webp";
+import cf7 from "/assets/fish/fishbg/coral reef 7.jpeg";
+import cf8 from "/assets/fish/fishbg/coral reef 8.jpeg";
+import cf9 from "/assets/fish/fishbg/coral reef 9.jpg";
+import cf10 from "/assets/fish/fishbg/coral reef 10.jpg";
+import cf11 from "/assets/fish/fishbg/coral reef 11.jpg";
+import cf12 from "/assets/fish/fishbg/coral reef 12.webp";
 
 const CoralData = [
   {

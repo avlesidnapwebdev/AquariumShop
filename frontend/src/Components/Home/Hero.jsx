@@ -1,5 +1,5 @@
 import React from "react";
-import FishBg from "../../assets/fish/fish/Betta Fish.png";
+// import FishBg from "/assets/fish/fish/Betta Fish.png";
 import { Link } from "react-router-dom";
  
 export default function Hero() {
@@ -8,7 +8,7 @@ export default function Hero() {
       {/* Left: Image */}
       <div className="flex justify-center w-full lg:w-1/2">
         <img
-          src={FishBg}
+          src="/assets/fish/fish/Betta Fish.png"
           alt="Betta Fish"
           className="w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl transform -scale-x-100"
         />

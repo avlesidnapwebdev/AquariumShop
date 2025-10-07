@@ -1,5 +1,5 @@
 import React from "react";
-import cf5 from "../../../assets/fish/fishbg/coral reef 5.webp";
+import cf5 from "/assets/fish/fishbg/coral reef 5.webp";
 import { Link } from "react-router-dom"; 
 
 export default function AdvertisementCoral() {

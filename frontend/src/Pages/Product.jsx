@@ -18,9 +18,9 @@ import HuntData from "../Data/HuntData.jsx";
 import FoodData from "../Data/FoodData.jsx";
 import TankData from "../Data/TankData.jsx";
 import FishData from "../Data/FishData.jsx";
-import fish1 from "../assets/fish/fish/Adolfo s cory.png";
-import fish2 from "../assets/fish/fish/Adonis tetra.png";
-import fish3 from "../assets/fish/fish/African peacock cichlid.png";
+// import fish1 from "../../public/assets/fish/fish/Adolfo s cory.png";
+// import fish2 from "../../public/assets/fish/fish/Adonis tetra.png";
+// import fish3 from "../../public/assets/fish/fish/African peacock cichlid.png";
 
 export default function ProductPage({ isLoggedIn, username, onLogout }) {
   const { id } = useParams();
@@ -101,9 +101,9 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
         {/* ✅ Recently Viewed */}
         <ProductRecentViews
           recent={[
-            { id: 1001, name: "Adolfo s cory", image: fish1 },
-            { id: 1002, name: "Adonis tetra", image: fish2 },
-            { id: 1003, name: "African peacock cichlid", image: fish3 },
+            { id: 1001, name: "Adolfo s cory", image: "../../public/assets/fish/fish/Adolfo s cory.png" },
+            { id: 1002, name: "Adonis tetra", image: "../../public/assets/fish/fish/Adonis tetra.png" },
+            { id: 1003, name: "African peacock cichlid", image: "../../public/assets/fish/fish/African peacock cichlid.png" },
           ]}
         />
       </main>

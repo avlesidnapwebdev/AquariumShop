@@ -1,12 +1,12 @@
 import React from "react";
-import Goldfish from "../../assets/fish/goldfish.png";
-import Fishtank from "../../assets/fishtank.png";
-import Delivery from "../../assets/fish/service-icon-1.png";
+// import Goldfish from "/assets/fish/goldfish.png";
+// import Fishtank from "/assets/fishtank.png";
+// import Delivery from "/assets/fish/service-icon-1.png";
  
 const features = [
-  { id: 1, img: Goldfish, text: "Fish Care Easy", size: "w-16" },
-  { id: 2, img: Fishtank, text: "Tank Safe Free Delivery", size: "w-14" },
-  { id: 5, img: Delivery, text: "Home Free Delivery", size: "w-12" },
+  { id: 1, img: "/assets/fish/goldfish.png", text: "Fish Care Easy", size: "w-16" },
+  { id: 2, img:  "/assets/fishtank.png", text: "Tank Safe Free Delivery", size: "w-14" },
+  { id: 5, img: "/assets/fish/service-icon-1.png", text: "Home Free Delivery", size: "w-12" },
 ];
 
 export default function PromiseDelivery() {

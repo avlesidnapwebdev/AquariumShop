@@ -5,7 +5,7 @@ import {
   FaFacebookF,
   FaLinkedinIn,
 } from "react-icons/fa";
-import logo from "../assets/AQualogo.png";
+// import logo from "../../public/assets/AQualogo.png";
 import { HiOutlineMail } from "react-icons/hi";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -24,7 +24,7 @@ export default function Footer() {
         {/* Branding */}
         <div className="flex flex-col items-start space-y-5">
           <Link to={"/"}>
-            <img src={logo} alt="Logo" className="w-32 sm:w-36" />
+            <img src="/assets/Aqualogo.png" alt="Logo" className="w-32 sm:w-36" />
           </Link>
           <p className="text-sm sm:text-base font-medium max-w-xs">
             Your Online AquaShop for Trusted Products and Friendly Service

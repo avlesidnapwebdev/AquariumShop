@@ -1,5 +1,5 @@
 import React from "react";
-import tank3 from '../../../assets/fish/tank/aqua 45k.png'
+import tank3 from '/assets/fish/tank/aqua 45k.png'
 import { Link } from "react-router-dom"; 
 
 export default function Advertisement({ 

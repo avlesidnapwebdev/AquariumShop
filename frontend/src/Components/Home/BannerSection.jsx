@@ -1,8 +1,8 @@
 import React from "react";
-import betaFish from "../../assets/fish/beta_fish-Banner.png";
-import FoodFish from "../../assets/fish/Foods_Banner.png";
-import Decoration from "../../assets/fish/Decoration_Banner.png";
-import FishPole from "../../assets/fish/Fishpole_Banner.png";
+// import betaFish from "/assets/fish/beta_fish-Banner.png";
+// import FoodFish from "/assets/fish/Foods_Banner.png";
+// import Decoration from "/assets/fish/Decoration_Banner.png";
+// import FishPole from "/assets/fish/Fishpole_Banner.png";
 import { Link } from "react-router-dom";
  
 const banners = [
@@ -11,7 +11,7 @@ const banners = [
     title: "free shipping Betta Fish",
     discount: "30%",
     sub: "sale off",
-    img: betaFish,
+    img: "/assets/fish/beta_fish-Banner.png",
     gradient: "bg-gradient-to-tr from-[#856ebf] to-[#baabe8]",
     category: "Fish", // ✅ category filter
   },
@@ -20,7 +20,7 @@ const banners = [
     title: "free shipping Foods",
     discount: "20%",
     sub: "sale off",
-    img: FoodFish,
+    img: "/assets/fish/Foods_Banner.png",
     gradient: "bg-gradient-to-tr from-[#017faf] to-[#5298bc]",
     category: "Food", // ✅ category filter
   },
@@ -29,7 +29,7 @@ const banners = [
     title: "free shipping Decoration",
     discount: "55%",
     sub: "Ends Today",
-    img: Decoration,
+    img: "/assets/fish/Decoration_Banner.png",
     gradient: "bg-gradient-to-tr from-[#e7bc56] to-[#e4c57b]",
     category: "Decoration", // ✅ category filter
   },
@@ -38,7 +38,7 @@ const banners = [
     title: "free shipping Fishpole",
     discount: "40%",
     sub: "sale off",
-    img: FishPole,
+    img: "/assets/fish/Fishpole_Banner.png",
     gradient: "bg-gradient-to-tr from-[#9b8f7f] to-[#9b8f7f]",
     category: "Hunt", // ✅ mapped as Fishpole → Hunt
   },

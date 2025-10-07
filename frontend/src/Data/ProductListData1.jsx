@@ -1,5 +1,5 @@
 // src/Data/ProductData.jsx
-import cf from "../assets/fish/fishbg/coral reef.jpg";
+// import cf from "/assets/fish/fishbg/coral reef.jpg";
 const ProductListData1 = [
   {
     id: 1401,
@@ -10,7 +10,7 @@ const ProductListData1 = [
     rating: 4.5,
     category: "Coral",
     tags: ["coral", "coralreefs coralreef"],
-    image: cf, 
+    image: "/assets/fish/fishbg/coral reef.jpg", 
     description: "A beautiful saltwater fish, easy to care for.",
   additionalInfo: [
     "Water type: Saltwater",

@@ -1,5 +1,5 @@
 import React from "react";
-import bag3 from "../../../assets/fish/hunt/bag2.png";
+import bag3 from "/assets/fish/hunt/bag2.png";
 import { Link } from "react-router-dom"; 
 
 export default function AdvertisementHunt({}) {

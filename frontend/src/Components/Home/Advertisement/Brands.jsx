@@ -1,12 +1,12 @@
 import React from "react";
-import brd from "../../../assets/fish/brand1.png";
-import brd2 from "../../../assets/fish/brand2.png";
-import brd3 from "../../../assets/fish/brand3.png";
-import brd4 from "../../../assets/fish/brand4.png";
-import brd5 from "../../../assets/fish/brand5.png";
+// import brd from "/assets/fish/brand1.png";
+// import brd2 from "/assets/fish/brand2.png";
+// import brd3 from "/assets/fish/brand3.png";
+// import brd4 from "/assets/fish/brand4.png";
+// import brd5 from "/assets/fish/brand5.png";
 
 export default function Brands() {
-  const brands = [brd, brd2, brd3, brd4, brd5];
+  const brands = ["/assets/fish/brand1.png", "/assets/fish/brand2.png", "/assets/fish/brand3.png", "/assets/fish/brand4.png", "/assets/fish/brand5.png"];
 
   return (
     <section className="w-full bg-white py-10 md:py-20">
