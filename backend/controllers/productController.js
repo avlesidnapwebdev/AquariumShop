@@ -6,8 +6,8 @@ export const createProduct = async (req, res) => {
     const product = await Product.create(req.body);
     res.status(201).json(product);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("createProduct ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -17,8 +17,8 @@ export const listProducts = async (req, res) => {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json(products);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("listProducts ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -29,20 +29,22 @@ export const getProduct = async (req, res) => {
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.json(product);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("getProduct ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 // Update product
 export const updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.json(product);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("updateProduct ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -53,7 +55,7 @@ export const deleteProduct = async (req, res) => {
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.json({ message: "Product deleted successfully" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("deleteProduct ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };

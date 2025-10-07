@@ -6,7 +6,7 @@ import { useParams, Link } from "react-router-dom";
 import Header from "../Main/Header.jsx";
 import Footer from "../Main/Footer.jsx";
 
-import products from "../Data/ProductListData";
+// import products from "../Data/ProductListData";
 import ProductDetails from "../Components/Product/ProductDetails.jsx";
 import ProductFeatures from "../Components/Product/ProductFeatures.jsx";
 import ProductRelated from "../Components/Product/ProductRelated.jsx";

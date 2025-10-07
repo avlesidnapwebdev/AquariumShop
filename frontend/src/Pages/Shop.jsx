@@ -3,7 +3,7 @@ import Header from "../Main/Header.jsx";
 import SideBar from "../Components/Shop/SideBar.jsx";
 import Products from "../Components/Shop/Products.jsx";
 import { FaTh, FaList, FaFilter } from "react-icons/fa";
-import data from "../Data/ProductsData.jsx";
+// import data from "../Data/ProductsData.jsx";
 
 export default function Shop({
   isLoggedIn,

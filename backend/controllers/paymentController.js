@@ -2,6 +2,8 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import Order from "../models/Order.js";
+import Cart from "../models/Cart.js";
+import Product from "../models/Product.js";
 
 dotenv.config();
 
@@ -12,81 +14,69 @@ const razor = new Razorpay({
 });
 
 /* ============================================================
-   ✅ CREATE RAZORPAY ORDER (TEST MODE)
+   ✅ CREATE RAZORPAY ORDER
 ============================================================ */
 export const createRazorpayOrder = async (req, res) => {
   try {
-    const { amount, items, currency = "INR", address } = req.body;
+    const { items, amount, currency = "INR", address } = req.body;
 
-    if (!amount || !items || !items.length || !address) {
+    if (!amount || !items?.length || !address) {
       return res.status(400).json({ message: "Amount, items, and address are required" });
     }
 
-    const orderNumber = `ORD-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    // Generate unique order number
+    const orderNumber = `AQ-${Date.now().toString(36)}-${Math.floor(Math.random() * 10000)}`;
 
-    // Razorpay order
-    const razorpayOrder = await razor.orders.create({
-      amount: amount * 100, // in paise
+    // Create Razorpay order
+    const rOrder = await razor.orders.create({
+      amount: amount * 100, // amount in paise
       currency,
       receipt: orderNumber,
     });
 
-    // Map items
-    const orderItems = items.map(item => ({
+    // Map items to Order schema
+    const orderItems = items.map((item) => ({
       product: item.productId,
       quantity: item.quantity,
-      priceAtPurchase: item.price
+      priceAtPurchase: item.price,
     }));
 
     // Save order in DB
-    const order = new Order({
+    const order = await Order.create({
       orderNumber,
       user: req.user._id,
       products: orderItems,
       totalAmount: amount,
-      address,                  // ✅ include address
+      address,
       paymentMethod: "Razorpay",
       paymentStatus: "Pending",
-      providerOrderId: razorpayOrder.id
+      providerOrderId: rOrder.id,
     });
-
-    await order.save();
 
     res.status(200).json({
       success: true,
-      rOrder: razorpayOrder,
+      rOrder,
       key: process.env.RAZORPAY_KEY_ID,
-      ourOrderId: order._id
+      ourOrderId: order._id,
     });
-  } catch (error) {
-    console.error("💥 Razorpay Order Creation Error:", error);
-    res.status(500).json({ message: "Payment initialization failed", error: error.message });
+  } catch (err) {
+    console.error("💥 Razorpay Order Creation Error:", err);
+    res.status(500).json({ message: "Payment initialization failed", error: err.message });
   }
 };
-
 
 /* ============================================================
    ✅ VERIFY RAZORPAY PAYMENT
 ============================================================ */
 export const verifyRazorpayPayment = async (req, res) => {
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      ourOrderId,
-    } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, ourOrderId } = req.body;
 
-    if (
-      !razorpay_order_id ||
-      !razorpay_payment_id ||
-      !razorpay_signature ||
-      !ourOrderId
-    ) {
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !ourOrderId) {
       return res.status(400).json({ message: "Missing payment details" });
     }
 
-    // 🔒 Verify signature
+    // Verify signature
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -104,6 +94,18 @@ export const verifyRazorpayPayment = async (req, res) => {
     order.providerPaymentId = razorpay_payment_id;
     order.status = "Received";
     await order.save();
+
+    // 🔹 Reduce stock
+    for (const item of order.products) {
+      await Product.findByIdAndUpdate(item.product, { $inc: { stock: -item.quantity } });
+    }
+
+    // 🔹 Clear user's cart
+    const cart = await Cart.findOne({ user: order.user });
+    if (cart) {
+      cart.products = [];
+      await cart.save();
+    }
 
     res.status(200).json({ success: true, message: "Payment verified", order });
   } catch (err) {

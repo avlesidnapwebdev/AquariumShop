@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 // import logo from "/assets/AQualogo.png";
 // import searchIcon from "/assets/search.png";
 import { useCart } from "./Constant/AddToCart.jsx";
-import data from "../Data/ProductsData.jsx";
+// import data from "../Data/ProductsData.jsx";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FiShoppingBag } from "react-icons/fi";
 import { IoPersonCircle } from "react-icons/io5";

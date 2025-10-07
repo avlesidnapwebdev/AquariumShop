@@ -14,7 +14,8 @@ const getOrCreate = async (userId) => {
 // GET /api/cart
 export const getCart = async (req, res) => {
   try {
-    if (!req.user?._id) return res.status(401).json({ message: "Unauthorized" });
+    if (!req.user?._id)
+      return res.status(401).json({ message: "Unauthorized" });
     const cart = await getOrCreate(req.user._id);
     res.json(cart);
   } catch (err) {
@@ -29,21 +30,21 @@ export const addToCart = async (req, res) => {
     const userId = req.user?._id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    let { productId, quantity = 1 } = req.body;
-    if (!productId) return res.status(400).json({ message: "productId is required" });
+    const { productId, quantity = 1 } = req.body;
+    if (!productId)
+      return res.status(400).json({ message: "productId is required" });
 
-    // Validate product exists
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ message: "Product not found" });
 
     const cart = await getOrCreate(userId);
 
-    // Clean invalid items
-    cart.products = cart.products.filter(p => p.product != null);
+    // Remove invalid items
+    cart.products = cart.products.filter((p) => p.product != null);
 
-    // Check if product already exists in cart
-    const idx = cart.products.findIndex(p => p.product._id.toString() === productId.toString());
-
+    const idx = cart.products.findIndex(
+      (p) => p.product._id.toString() === productId.toString()
+    );
     if (idx > -1) cart.products[idx].quantity += Number(quantity);
     else cart.products.push({ product: productId, quantity: Number(quantity) });
 
@@ -66,13 +67,17 @@ export const updateCartItem = async (req, res) => {
     const { productId } = req.params;
     const { quantity } = req.body;
 
-    if (!productId) return res.status(400).json({ message: "productId is required" });
+    if (!productId)
+      return res.status(400).json({ message: "productId is required" });
 
     const cart = await getOrCreate(userId);
-    cart.products = cart.products.filter(p => p.product != null);
+    cart.products = cart.products.filter((p) => p.product != null);
 
-    const idx = cart.products.findIndex(p => p.product._id.toString() === productId.toString());
-    if (idx === -1) return res.status(404).json({ message: "Product not in cart" });
+    const idx = cart.products.findIndex(
+      (p) => p.product._id.toString() === productId.toString()
+    );
+    if (idx === -1)
+      return res.status(404).json({ message: "Product not in cart" });
 
     if (quantity <= 0) cart.products.splice(idx, 1);
     else cart.products[idx].quantity = Number(quantity);

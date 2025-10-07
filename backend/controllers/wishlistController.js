@@ -14,7 +14,10 @@ export const getWishlist = async (req, res) => {
   try {
     const wl = await getOrCreate(req.user._id);
     res.json(wl);
-  } catch (err) { res.status(500).json({ message: "Server error" }); }
+  } catch (err) {
+    console.error("getWishlist ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
 
 export const addToWishlist = async (req, res) => {
@@ -24,12 +27,18 @@ export const addToWishlist = async (req, res) => {
     if (!product) return res.status(404).json({ message: "Product not found" });
 
     const wl = await getOrCreate(req.user._id);
-    if (wl.products.find(p => p._id.toString() === productId)) return res.status(400).json({ message: "Already in wishlist" });
+    if (wl.products.find(p => p._id.toString() === productId)) 
+      return res.status(400).json({ message: "Already in wishlist" });
+
     wl.products.push(productId);
     await wl.save();
     await wl.populate("products");
+
     res.json(wl);
-  } catch (err) { res.status(500).json({ message: "Server error" }); }
+  } catch (err) {
+    console.error("addToWishlist ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
 
 export const removeFromWishlist = async (req, res) => {
@@ -39,6 +48,10 @@ export const removeFromWishlist = async (req, res) => {
     wl.products = wl.products.filter(p => p._id.toString() !== productId);
     await wl.save();
     await wl.populate("products");
+
     res.json(wl);
-  } catch (err) { res.status(500).json({ message: "Server error" }); }
+  } catch (err) {
+    console.error("removeFromWishlist ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };

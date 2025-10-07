@@ -1,12 +1,13 @@
 import axios from "axios";
 
 /* ============================================================
-   ✅ BASE URL CONFIGURATION (Vite/React-compatible)
+   ✅ BASE URL CONFIGURATION
 ============================================================ */
-const envUrl = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL;
+const envUrl =
+  import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL;
 const normalizeBase = (url) => {
   if (!url) return "http://localhost:5000/api";
-  const trimmed = url.replace(/\/+$/, ""); // remove trailing slashes
+  const trimmed = url.replace(/\/+$/, "");
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
 const BASE = normalizeBase(envUrl);
@@ -49,10 +50,8 @@ API.interceptors.response.use(
 /* ============================================================
    ✅ AUTH ENDPOINTS
 ============================================================ */
-export const register = (data) => API.post("/auth/register", data);
-export const login = (data) => API.post("/auth/login", data);
-export const registerAPI = register;
-export const loginAPI = login;
+export const registerAPI = (data) => API.post("/auth/register", data);
+export const loginAPI = (data) => API.post("/auth/login", data);
 
 /* ============================================================
    ✅ PRODUCT ENDPOINTS
@@ -68,12 +67,13 @@ export const deleteProduct = (id) => API.delete(`/products/${id}`);
 ============================================================ */
 export const getCart = () => API.get("/cart");
 export const addToCart = ({ productId, quantity = 1 }) => {
-  if (!productId) throw new Error("productId is required"); // extra safety
+  if (!productId) throw new Error("productId is required");
   return API.post("/cart/add", { productId, quantity });
 };
-  
-export const updateCartItem = (productId, { quantity }) =>
-  API.put(`/cart/item/${productId}`, { quantity });
+export const updateCartItem = (productId, { quantity }) => {
+  if (!productId) throw new Error("productId is required");
+  return API.put(`/cart/item/${productId}`, { quantity });
+};
 export const clearCart = () => API.delete("/cart/clear");
 
 /* ============================================================
@@ -96,32 +96,36 @@ export const verifyRazorpayPayment = (data) =>
 /* ============================================================
    ✅ USER ENDPOINTS
 ============================================================ */
-export const getProfile = () => API.get("/users/profile");
-export const getProfileAPI = getProfile; // ✅ alias
-export const updateProfile = (formData) =>
-  API.put("/users/profile", formData, { headers: { "Content-Type": "multipart/form-data" } });
-export const updateProfileAPI = updateProfile;
+export const getProfileAPI = () => API.get("/users/profile");
+export const updateProfileAPI = (formData) =>
+  API.put("/users/profile", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 
 export const addAddress = (data) => API.post("/users/addresses", data);
-export const updateAddress = (id, data) => API.put(`/users/addresses/${id}`, data);
+export const updateAddress = (id, data) =>
+  API.put(`/users/addresses/${id}`, data);
 export const removeAddress = (id) => API.delete(`/users/addresses/${id}`);
-export const setDefaultAddress = (addressId) =>
-  API.put(`/users/addresses/default/${addressId}`);
+export const setDefaultAddress = (id) =>
+  API.put(`/users/addresses/default/${id}`);
 
-/* ============================================================
-   ✅ CARD ENDPOINTS
-============================================================ */
 export const addCard = (data) => API.post("/users/cards", data);
 export const removeCard = (id) => API.delete(`/users/cards/${id}`);
-export const setDefaultCard = (cardId) => API.put(`/users/cards/default/${cardId}`);
+export const setDefaultCard = (id) => API.put(`/users/cards/default/${id}`);
 export const deleteUser = () => API.delete("/users");
 
 /* ============================================================
    ✅ WISHLIST ENDPOINTS
 ============================================================ */
 export const getWishlist = () => API.get("/wishlist");
-export const addToWishlist = (productId) => API.post("/wishlist/add", { productId });
-export const removeFromWishlist = (productId) => API.delete(`/wishlist/remove/${productId}`);
+export const addToWishlist = (productId) => {
+  if (!productId) throw new Error("productId is required");
+  return API.post("/wishlist/add", { productId });
+};
+export const removeFromWishlist = (productId) => {
+  if (!productId) throw new Error("productId is required");
+  return API.delete(`/wishlist/remove/${productId}`);
+};
 
 /* ============================================================
    ✅ DEFAULT EXPORT
