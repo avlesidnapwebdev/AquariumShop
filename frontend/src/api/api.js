@@ -62,7 +62,9 @@ export const getProducts = async () => {
   const res = await API.get("/products");
   return res.data.map((p) => ({
     ...p,
-    image: p.image?.startsWith("http") ? p.image : `${BASE.replace("/api", "")}${p.image}`,
+    image: p.image?.startsWith("http")
+      ? p.image
+      : `${BASE.replace("/api", "")}${p.image}`,
   }));
 };
 
@@ -71,7 +73,9 @@ export const getProductById = async (id) => {
   const p = res.data;
   return {
     ...p,
-    image: p.image?.startsWith("http") ? p.image : `${BASE.replace("/api", "")}${p.image}`,
+    image: p.image?.startsWith("http")
+      ? p.image
+      : `${BASE.replace("/api", "")}${p.image}`,
   };
 };
 
@@ -83,14 +87,17 @@ export const deleteProduct = (id) => API.delete(`/products/${id}`);
    ✅ CART ENDPOINTS
 ============================================================ */
 export const getCart = () => API.get("/cart");
+
 export const addToCart = ({ productId, quantity = 1 }) => {
   if (!productId) throw new Error("productId is required");
   return API.post("/cart/add", { productId, quantity });
 };
+
 export const updateCartItem = (productId, { quantity }) => {
   if (!productId) throw new Error("productId is required");
   return API.put(`/cart/item/${productId}`, { quantity });
 };
+
 export const clearCart = () => API.delete("/cart/clear");
 
 /* ============================================================
@@ -114,15 +121,18 @@ export const verifyRazorpayPayment = (data) =>
    ✅ USER ENDPOINTS
 ============================================================ */
 export const getProfileAPI = () => API.get("/users/profile");
+
 export const updateProfileAPI = (formData) =>
   API.put("/users/profile", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
 export const addAddress = (data) => API.post("/users/addresses", data);
-export const updateAddress = (id, data) => API.put(`/users/addresses/${id}`, data);
+export const updateAddress = (id, data) =>
+  API.put(`/users/addresses/${id}`, data);
 export const removeAddress = (id) => API.delete(`/users/addresses/${id}`);
-export const setDefaultAddress = (id) => API.put(`/users/addresses/default/${id}`);
+export const setDefaultAddress = (id) =>
+  API.put(`/users/addresses/default/${id}`);
 
 export const addCard = (data) => API.post("/users/cards", data);
 export const removeCard = (id) => API.delete(`/users/cards/${id}`);
@@ -133,15 +143,17 @@ export const deleteUser = () => API.delete("/users");
    ✅ WISHLIST ENDPOINTS
 ============================================================ */
 export const getWishlist = () => API.get("/wishlist");
+
 export const addToWishlist = (productId) => {
   if (!productId) throw new Error("productId is required");
   return API.post("/wishlist/add", { productId });
 };
+
 export const removeFromWishlist = (productId) => {
   if (!productId) throw new Error("productId is required");
   return API.delete(`/wishlist/remove/${productId}`);
 };
-
+export const clearWishlist = () => API.delete("/wishlist/clear"); // NEW
 /* ============================================================
    ✅ DEFAULT EXPORT
 ============================================================ */

@@ -12,7 +12,7 @@ export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch cart from backend
+  // 🔹 Fetch Cart from DB
   const fetchCart = async () => {
     try {
       setLoading(true);
@@ -27,7 +27,7 @@ export function CartProvider({ children }) {
         })) || [];
       setCart(items);
     } catch (err) {
-      console.error("❌ Failed to fetch cart:", err);
+      console.error("❌ Fetch cart failed:", err);
       setCart([]);
     } finally {
       setLoading(false);
@@ -38,14 +38,10 @@ export function CartProvider({ children }) {
     fetchCart();
   }, []);
 
-  // Add item to cart
+  // 🔹 Add to Cart
   const addToCart = async (product, quantity = 1) => {
     try {
-      if (!product?._id) {
-        console.error("❌ Cannot add to cart: product._id is missing");
-        return;
-      }
-
+      if (!product?._id) throw new Error("Invalid product");
       await apiAddToCart({ productId: product._id, quantity });
       await fetchCart();
     } catch (err) {
@@ -53,14 +49,9 @@ export function CartProvider({ children }) {
     }
   };
 
-  // Update quantity of cart item
+  // 🔹 Update Quantity
   const updateQty = async (id, qty) => {
     try {
-      if (!id) {
-        console.error("❌ Cannot update cart: id is missing");
-        return;
-      }
-
       await apiUpdateCartItem(id, { quantity: qty });
       await fetchCart();
     } catch (err) {
@@ -68,22 +59,17 @@ export function CartProvider({ children }) {
     }
   };
 
-  // Remove item from cart
+  // 🔹 Remove from Cart
   const removeFromCart = async (id) => {
     try {
-      if (!id) {
-        console.error("❌ Cannot remove from cart: id is missing");
-        return;
-      }
-
       await apiUpdateCartItem(id, { quantity: 0 });
       await fetchCart();
     } catch (err) {
-      console.error("❌ Remove cart item failed:", err);
+      console.error("❌ Remove from cart failed:", err);
     }
   };
 
-  // Clear entire cart
+  // 🔹 Clear Cart
   const clearCart = async () => {
     try {
       await apiClearCart();
@@ -97,11 +83,11 @@ export function CartProvider({ children }) {
     <CartContext.Provider
       value={{
         cartItems: cart,
+        loading,
         addToCart,
         updateQty,
         removeFromCart,
         clearCart,
-        loading,
         refreshCart: fetchCart,
       }}
     >

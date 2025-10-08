@@ -24,7 +24,7 @@ export default function AccountSidebar({
   username = "Guest",
   isLoggedIn = false,
   onLogout = () => {},
-  onProfileChange = (updatedUser) => {}, // parent can pass handler
+  onProfileChange = (updatedUser) => {},
 }) {
   const navigate = useNavigate();
   const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -39,17 +39,17 @@ export default function AccountSidebar({
   const [currentProfilePic, setCurrentProfilePic] = useState(null);
   const [currentUsername, setCurrentUsername] = useState(username);
 
-  // ✅ Helper to correctly resolve image URLs
+  // ✅ Resolve profile pic URL
   const resolveProfilePic = (pic) => {
     if (!pic) return null;
-    if (pic.startsWith("data:")) return pic; // base64 image
-    if (pic.startsWith("http")) return pic; // absolute URL
+    if (pic.startsWith("data:")) return pic;
+    if (pic.startsWith("http")) return pic;
     if (pic.startsWith("/uploads")) return `${baseURL}${pic}`;
     if (pic.startsWith("uploads")) return `${baseURL}/${pic}`;
     return `${baseURL}/uploads/${pic}`;
   };
 
-  // ✅ Load user info from localStorage on mount and username change
+  // ✅ Load user from localStorage
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
@@ -66,30 +66,29 @@ export default function AccountSidebar({
     }
   }, [username]);
 
-  // ✅ Handle updates when EditProfile saves
+  // ✅ Handle profile update
   const handleProfileUpdate = (data) => {
     if (!data) return;
 
     const updatedUsername = data.fullName || currentUsername;
-    const updatedProfilePic = resolveProfilePic(data.profilePic) || currentProfilePic;
+    const updatedProfilePic =
+      resolveProfilePic(data.profilePic) || currentProfilePic;
 
     setCurrentUsername(updatedUsername);
     setCurrentProfilePic(updatedProfilePic);
 
-    // ✅ Merge and save updated data to localStorage
     try {
       const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
       const mergedUser = {
         ...savedUser,
         fullName: updatedUsername,
-        profilePic: data.profilePic, // store raw path/base64 (not resolved)
+        profilePic: data.profilePic,
       };
       localStorage.setItem("user", JSON.stringify(mergedUser));
     } catch (err) {
       console.error("❌ Failed to save user:", err);
     }
 
-    // Notify parent if needed
     onProfileChange(data);
   };
 
@@ -108,7 +107,10 @@ export default function AccountSidebar({
           id: 2,
           label: "Wishlist",
           icon: <FaHeart />,
-          onClick: () => setLocalWishlistOpen(true),
+          onClick: () => {
+            toggleSidebar?.();
+            setLocalWishlistOpen(true);
+          },
         },
         {
           id: 3,
@@ -202,7 +204,7 @@ export default function AccountSidebar({
             </button>
           ))}
 
-          {/* LOGIN / LOGOUT BUTTON */}
+          {/* LOGIN / LOGOUT */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -228,24 +230,24 @@ export default function AccountSidebar({
 
         {/* RECENTLY VIEWED */}
         <div className="mt-10 px-6">
-          <h3 className="text-md font-bold text-blue-600 mb-3">Recently Viewed</h3>
+          <h3 className="text-md font-bold text-blue-600 mb-3">
+            Recently Viewed
+          </h3>
           <div className="flex gap-3 overflow-x-auto pb-2">
             <p className="text-sm text-gray-500">No recent products</p>
           </div>
         </div>
       </div>
 
-      {/* OTHER SUB SIDEBARS */}
-      {!toggleSidebar && (
-        <WishlistSidebar
-          wishlistOpen={localWishlistOpen}
-          toggleWishlist={() => setLocalWishlistOpen(false)}
-          backToAccount={() => {
-            setLocalWishlistOpen(false);
-            toggleSidebar?.();
-          }}
-        />
-      )}
+      {/* ✅ FIXED: Always render WishlistSidebar */}
+      <WishlistSidebar
+        wishlistOpen={localWishlistOpen}
+        toggleWishlist={() => setLocalWishlistOpen(false)}
+        backToAccount={() => {
+          setLocalWishlistOpen(false);
+          toggleSidebar?.();
+        }}
+      />
 
       <MyOrders open={ordersOpen} setOpen={setOrdersOpen} />
       <EditProfile
