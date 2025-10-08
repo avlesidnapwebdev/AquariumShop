@@ -6,9 +6,9 @@ import { Trash2 } from "lucide-react";
 import ProductRecent from "../Components/Product/ProductRecentViews.jsx"; // ✅ Uppercase component
 
 // Dummy recent product images (replace with your imports)
-// import fish1 from "../../public/assets/fish/fish/Adolfo s cory.png";
-// import fish2 from "../../public/assets/fish/fish/Adonis tetra.png";
-// import fish3 from "../../public/assets/fish/fish/African peacock cichlid.png";
+// import fish1 from "/assets/fish/fish/Adolfo s cory.png";
+// import fish2 from "/assets/fish/fish/Adonis tetra.png";
+// import fish3 from "/assets/fish/fish/African peacock cichlid.png";
 
 export default function OrderPage() {
   const location = useLocation();
@@ -153,9 +153,9 @@ export default function OrderPage() {
       <div className="max-w-6xl mx-auto mt-10">
         <ProductRecent
           recent={[
-            { id: 1001, name: "Adolfo's Cory", image: "../../public/assets/fish/fish/Adolfo s cory.png" },
-            { id: 1002, name: "Adonis Tetra", image: "../../public/assets/fish/fish/Adonis tetra.png" },
-            { id: 1003, name: "African Peacock Cichlid", image: "../../public/assets/fish/fish/African peacock cichlid.png" },
+            { id: 1001, name: "Adolfo's Cory", image: "/assets/fish/fish/Adolfo s cory.png" },
+            { id: 1002, name: "Adonis Tetra", image: "/assets/fish/fish/Adonis tetra.png" },
+            { id: 1003, name: "African Peacock Cichlid", image: "/assets/fish/fish/African peacock cichlid.png" },
           ]}
         />
       </div>

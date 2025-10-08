@@ -8,10 +8,6 @@ import Header from "../Main/Header.jsx";
 import Footer from "../Main/Footer.jsx";
 import ProductRecentViews from "../Components/Product/ProductRecentViews.jsx";
 
-// ✅ Assets (demo recent views)
-// import fish1 from "../../public/assets/fish/fish/Adolfo s cory.png";
-// import fish2 from "../../public/assets/fish/fish/Adonis tetra.png";
-// import fish3 from "../../public/assets/fish/fish/African peacock cichlid.png";
 
 export default function Wishlist({ isLoggedIn, username, onLogout }) {
   const { wishlistItems, removeFromWishlist } = useWishlist();
@@ -94,9 +90,9 @@ export default function Wishlist({ isLoggedIn, username, onLogout }) {
         {/* Recently Viewed */}
         <ProductRecentViews
           recent={[
-            { id: 1001, name: "Adolfo s cory", image: "../../public/assets/fish/fish/Adolfo s cory.png" },
-            { id: 1002, name: "Adonis tetra", image: "../../public/assets/fish/fish/Adonis tetra.png" },
-            { id: 1003, name: "African peacock cichlid", image: "../../public/assets/fish/fish/African peacock cichlid.png" },
+            { id: 1001, name: "Adolfo s cory", image: "/assets/fish/fish/Adolfo s cory.png" },
+            { id: 1002, name: "Adonis tetra", image: "/assets/fish/fish/Adonis tetra.png" },
+            { id: 1003, name: "African peacock cichlid", image: "/assets/fish/fish/African peacock cichlid.png" },
           ]}
         />
       </main>
