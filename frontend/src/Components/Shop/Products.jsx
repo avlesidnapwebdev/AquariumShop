@@ -1,18 +1,14 @@
-// src/Components/Shop/Products.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../../Main/Constant/AddToCart.jsx";
 import { useWishlist } from "../../Main/Constant/Wishlist.jsx";
 import { FiShoppingCart } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
-import { getProducts } from "../../api/api.js";
 
-export default function Products({ view = "grid" }) {
+export default function Products({ products = [], view = "grid" }) {
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [popupMessage, setPopupMessage] = useState("");
 
   // ✅ Show popup
@@ -21,23 +17,8 @@ export default function Products({ view = "grid" }) {
     setTimeout(() => setPopupMessage(""), 2000);
   };
 
-  // ✅ Fetch products from backend
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await getProducts();
-        setProducts(res.data); // Ensure your backend returns an array of products
-      } catch (err) {
-        console.error("Failed to fetch products:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  if (loading) {
-    return <p className="text-center py-10 text-gray-700">Loading products...</p>;
+  if (!products || products.length === 0) {
+    return <p className="text-center py-10 text-gray-700">No products found.</p>;
   }
 
   return (

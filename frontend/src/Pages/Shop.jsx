@@ -1,10 +1,9 @@
-// src/Pages/Shop.jsx
 import React, { useState, useMemo, useEffect } from "react";
 import Header from "../Main/Header.jsx";
 import SideBar from "../Components/Shop/SideBar.jsx";
 import Products from "../Components/Shop/Products.jsx";
 import { FaTh, FaList, FaFilter } from "react-icons/fa";
-import { getProducts } from "../api/api.js"; // ✅ API import
+import { getProducts } from "../api/api.js";
 
 export default function Shop({ isLoggedIn, username, profilePic, onLogout }) {
   const [query, setQuery] = useState("");
@@ -21,13 +20,13 @@ export default function Shop({ isLoggedIn, username, profilePic, onLogout }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch products from backend
+  // ✅ Fetch all products
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
         const res = await getProducts();
-        setProducts(res.data); // assuming backend returns { data: [...] }
+        setProducts(res.data);
       } catch (err) {
         console.error("Failed to fetch products:", err);
         setProducts([]);
@@ -54,24 +53,24 @@ export default function Shop({ isLoggedIn, username, profilePic, onLogout }) {
     return map[cat.toLowerCase().trim()] || cat.toLowerCase().trim();
   };
 
+  // Reset page on filter/search change
   useEffect(() => {
     setCurrentPage(1);
   }, [filters, query]);
 
-  // ✅ Filtered products
+  // ✅ Filtered products based on filters, search, sort
   const filteredProducts = useMemo(() => {
     if (!products) return [];
     let list = [...products];
 
-    // Filter category
+    // Category
     if (filters.category) {
       list = list.filter(
-        (p) =>
-          normalizeCategory(p.category) === normalizeCategory(filters.category)
+        (p) => normalizeCategory(p.category) === normalizeCategory(filters.category)
       );
     }
 
-    // Filter price
+    // Price
     if (filters.price) {
       const [min, max] = filters.price.split("-").map(Number);
       list = list.filter((p) => Number(p.price) >= min && Number(p.price) <= max);
@@ -97,6 +96,7 @@ export default function Shop({ isLoggedIn, username, profilePic, onLogout }) {
   // ✅ Counts for sidebar
   const counts = useMemo(() => {
     if (!products) return { categories: [], priceRanges: [] };
+
     let baseList = [...products];
 
     if (query) {
@@ -155,7 +155,10 @@ export default function Shop({ isLoggedIn, username, profilePic, onLogout }) {
   const productsPerPage = 50;
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = filteredProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   const firstResult = filteredProducts.length === 0 ? 0 : indexOfFirstProduct + 1;
@@ -192,13 +195,17 @@ export default function Shop({ isLoggedIn, username, profilePic, onLogout }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setView("grid")}
-              className={`p-2 rounded ${view === "grid" ? "bg-black text-white" : "bg-white border text-gray-600"}`}
+              className={`p-2 rounded ${
+                view === "grid" ? "bg-black text-white" : "bg-white border text-gray-600"
+              }`}
             >
               <FaTh />
             </button>
             <button
               onClick={() => setView("list")}
-              className={`p-2 rounded ${view === "list" ? "bg-black text-white" : "bg-white border text-gray-600"}`}
+              className={`p-2 rounded ${
+                view === "list" ? "bg-black text-white" : "bg-white border text-gray-600"
+              }`}
             >
               <FaList />
             </button>

@@ -1,4 +1,3 @@
-// src/Components/Shop/SideBar.jsx
 import React, { useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -7,29 +6,49 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Sync category filter with URL query param (shop?category=Fish)
+  // Sync all filters from URL query params on load or URL change
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const categoryFromUrl = params.get("category") || "";
-    if (categoryFromUrl && filters.category !== categoryFromUrl) {
-      setFilters((prev) => ({ ...prev, category: categoryFromUrl }));
-    }
-  }, [location.search, setFilters, filters.category]);
+    const priceFromUrl = params.get("price") || "";
+    const sortFromUrl = params.get("sort") || "Featured";
+
+    setFilters((prev) => ({
+      category: categoryFromUrl,
+      price: priceFromUrl,
+      sort: sortFromUrl,
+    }));
+  }, [location.search, setFilters]);
 
   const updateFilter = (newFilter) => {
     const updatedFilters = { ...filters, ...newFilter };
     setFilters(updatedFilters);
 
-    // Update URL query param for category only
-    if (newFilter.category !== undefined) {
-      const params = new URLSearchParams(location.search);
-      if (newFilter.category) {
-        params.set("category", newFilter.category);
-      } else {
-        params.delete("category");
-      }
-      navigate({ search: params.toString() }, { replace: true });
+    // Update URL query params for all filters
+    const params = new URLSearchParams(location.search);
+
+    // Category
+    if (updatedFilters.category) {
+      params.set("category", updatedFilters.category);
+    } else {
+      params.delete("category");
     }
+
+    // Price
+    if (updatedFilters.price) {
+      params.set("price", updatedFilters.price);
+    } else {
+      params.delete("price");
+    }
+
+    // Sort
+    if (updatedFilters.sort && updatedFilters.sort !== "Featured") {
+      params.set("sort", updatedFilters.sort);
+    } else {
+      params.delete("sort");
+    }
+
+    navigate({ search: params.toString() }, { replace: true });
   };
 
   const clearAll = () => {
@@ -75,10 +94,11 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
             <button
               key={range.range}
               onClick={() => updateFilter({ price: range.range })}
-              className={`flex justify-between px-3 py-1 rounded border text-sm ${filters.price === range.range
+              className={`flex justify-between px-3 py-1 rounded border text-sm ${
+                filters.price === range.range
                   ? "bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+              }`}
             >
               <span>₹{range.range}</span>
               <span className="ml-4 text-gray-500">({range.count})</span>
@@ -99,20 +119,19 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
       <div className="mb-6">
         <h4 className="font-semibold mb-2">Sort By</h4>
         <div className="flex flex-wrap gap-2">
-          {["Featured", "Price: Low to High", "Price: High to Low"].map(
-            (option) => (
-              <button
-                key={option}
-                onClick={() => updateFilter({ sort: option })}
-                className={`px-3 py-1 rounded border text-sm ${filters.sort === option
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-              >
-                {option}
-              </button>
-            )
-          )}
+          {["Featured", "Price: Low to High", "Price: High to Low"].map((option) => (
+            <button
+              key={option}
+              onClick={() => updateFilter({ sort: option })}
+              className={`px-3 py-1 rounded border text-sm ${
+                filters.sort === option
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {option}
+            </button>
+          ))}
         </div>
       </div>
 
