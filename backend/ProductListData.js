@@ -2454,7 +2454,7 @@ const productsData = [
     "_id": "68e4e8d098a9cd3e236570aa"
   },
   {
-    "name": "Aqua Tank",
+    "name": "Aqua Bowl",
     "price": 399,
     "stock": 12,
     "totalStock": 79,
@@ -2509,7 +2509,7 @@ const productsData = [
         "text": "Good condition, safe packaging."
       }
     ],
-    "_id": "68e4e8cf98a9cd3e23657098"
+    "_id": "68e4e8d098a9cd3e236570ad"
   },
   {
     "name": "hanging bowl",

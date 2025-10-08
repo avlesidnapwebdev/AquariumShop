@@ -7,8 +7,7 @@ import Stars from "../../Main/Constant/Stars.jsx";
 import { getProductById } from "../../api/api.js";
 
 export default function ProductDetailsPage() {
-  // ✅ Use the correct param name
-  const { id } = useParams(); // Make sure your route is like "/product/:id"
+  const { id } = useParams(); // route like "/product/:id"
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
@@ -20,7 +19,7 @@ export default function ProductDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ✅ Fetch product safely
+  // Fetch product by ID
   useEffect(() => {
     if (!id) {
       setError("Invalid product ID.");
@@ -33,8 +32,8 @@ export default function ProductDetailsPage() {
       setError("");
       try {
         const res = await getProductById(id);
-        setProduct(res?.data || null);
-        if (!res?.data) setError("Product not found.");
+        setProduct(res || null);
+        if (!res) setError("Product not found.");
       } catch (err) {
         console.error("Failed to fetch product:", err);
         setError("Failed to fetch product.");
@@ -42,17 +41,11 @@ export default function ProductDetailsPage() {
         setLoading(false);
       }
     };
+
     fetchProduct();
   }, [id]);
 
-  if (loading) {
-    return <p className="text-center py-10 text-gray-700">Loading product...</p>;
-  }
-
-  if (error || !product) {
-    return <p className="text-center py-10 text-red-600">{error}</p>;
-  }
-
+  // Popup handler
   const showPopup = (msg) => {
     setPopupMessage(msg);
     setTimeout(() => setPopupMessage(""), 2000);
@@ -74,6 +67,14 @@ export default function ProductDetailsPage() {
     navigate("/buy-now", { state: { cartItems: [buyItem] } });
   };
 
+  if (loading) {
+    return <p className="text-center py-10 text-gray-700">Loading product...</p>;
+  }
+
+  if (error || !product) {
+    return <p className="text-center py-10 text-red-600">{error}</p>;
+  }
+
   return (
     <div className="relative p-4 md:p-10">
       {/* Popup */}
@@ -87,8 +88,8 @@ export default function ProductDetailsPage() {
         {/* Product Image */}
         <div className="border p-4 rounded-lg flex items-center justify-center w-full max-w-md h-auto mx-auto">
           <img
-            src={product.image}
-            alt={product.name}
+            src={product.image || ""}
+            alt={product.name || "Product Image"}
             className="max-h-full max-w-full object-contain"
           />
         </div>
@@ -100,14 +101,14 @@ export default function ProductDetailsPage() {
 
           {/* Star Rating */}
           <div className="flex items-center gap-2 mb-2">
-            <Stars rating={product.rating} />
+            <Stars rating={product.rating || 0} />
             <span className="text-gray-600 text-sm">
               ({product.reviews?.length || 0} Reviews)
             </span>
           </div>
 
           <p className="mb-2 text-gray-700">
-            Available: {product.stock}/{product.totalStock || product.stock}
+            Available: {product.stock || 0}/{product.totalStock || product.stock || 0}
           </p>
 
           {/* Quantity Selector */}
@@ -156,9 +157,9 @@ export default function ProductDetailsPage() {
           </div>
 
           {/* Category & Tags */}
-          <p className="text-gray-600">Category: {product.category}</p>
+          <p className="text-gray-600">Category: {product.category || "N/A"}</p>
           <p className="text-gray-600">
-            Tags: {product.tags?.join(", ") || "None"}
+            Tags: {product.tags?.length ? product.tags.join(", ") : "None"}
           </p>
 
           {/* Tabs */}
@@ -167,8 +168,8 @@ export default function ProductDetailsPage() {
               <button
                 onClick={() => setActiveTab("description")}
                 className={`font-semibold ${activeTab === "description"
-                  ? "text-purple-600 border-b-2 border-purple-600"
-                  : "text-gray-600"
+                    ? "text-purple-600 border-b-2 border-purple-600"
+                    : "text-gray-600"
                   }`}
               >
                 Description
@@ -176,8 +177,8 @@ export default function ProductDetailsPage() {
               <button
                 onClick={() => setActiveTab("additional")}
                 className={`font-semibold ${activeTab === "additional"
-                  ? "text-purple-600 border-b-2 border-purple-600"
-                  : "text-gray-600"
+                    ? "text-purple-600 border-b-2 border-purple-600"
+                    : "text-gray-600"
                   }`}
               >
                 Additional Info
@@ -185,8 +186,8 @@ export default function ProductDetailsPage() {
               <button
                 onClick={() => setActiveTab("reviews")}
                 className={`font-semibold ${activeTab === "reviews"
-                  ? "text-purple-600 border-b-2 border-purple-600"
-                  : "text-gray-600"
+                    ? "text-purple-600 border-b-2 border-purple-600"
+                    : "text-gray-600"
                   }`}
               >
                 Reviews ({product.reviews?.length || 0})
@@ -195,7 +196,7 @@ export default function ProductDetailsPage() {
 
             {/* Tab Content */}
             {activeTab === "description" && (
-              <p className="text-gray-700">{product.description}</p>
+              <p className="text-gray-700">{product.description || "No description available."}</p>
             )}
 
             {activeTab === "additional" && (
@@ -217,10 +218,7 @@ export default function ProductDetailsPage() {
                 {product.reviews?.length > 0 ? (
                   <ul className="space-y-3">
                     {product.reviews.map((rev, i) => (
-                      <li
-                        key={i}
-                        className="border p-3 rounded shadow-sm bg-gray-50"
-                      >
+                      <li key={i} className="border p-3 rounded shadow-sm bg-gray-50">
                         ⭐ {rev.rating} – {rev.text}
                       </li>
                     ))}

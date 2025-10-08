@@ -4,7 +4,7 @@ import { useWishlist } from "../../../Main/Constant/Wishlist.jsx";
 import { FaHeart } from "react-icons/fa";
 import { FiShoppingCart } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { getProducts } from "../../../api/api.js"; // ✅ Import backend API
+import { getProducts } from "../../../api/api.js"; // ✅ Backend API
 
 export default function Hunt() {
   const { addToCart } = useCart();
@@ -21,10 +21,9 @@ export default function Hunt() {
   useEffect(() => {
     const fetchHuntProducts = async () => {
       try {
-        const { data } = await getProducts();
-        if (data && Array.isArray(data)) {
-          // Filter only Hunt category
-          const huntItems = data.filter(
+        const allProducts = await getProducts(); // ✅ Fix: use array directly
+        if (Array.isArray(allProducts)) {
+          const huntItems = allProducts.filter(
             (item) => item.category?.toLowerCase() === "hunt"
           );
           setHuntProducts(huntItems);
@@ -76,6 +75,9 @@ export default function Hunt() {
     setTimeout(() => setPopupMessage(""), 2000);
   };
 
+  /* ============================================================
+     ✅ Loading / Empty State
+  ============================================================ */
   if (loading) {
     return (
       <section className="w-full min-h-[40vh] flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-400">
@@ -161,7 +163,6 @@ export default function Hunt() {
 
               {/* Action Buttons */}
               <div className="flex justify-around items-center w-full border-t p-2">
-                {/* Add to Cart */}
                 <button
                   className="flex items-center gap-2 text-blue-600 font-semibold hover:text-red-600 transition"
                   onClick={() => {
@@ -174,7 +175,6 @@ export default function Hunt() {
                   <span className="hidden sm:inline">Cart</span>
                 </button>
 
-                {/* Add to Wishlist */}
                 <button
                   className="flex items-center gap-2 text-blue-500 hover:text-red-600 font-semibold transition"
                   onClick={() => {

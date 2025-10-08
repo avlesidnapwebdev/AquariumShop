@@ -21,26 +21,33 @@ const app = express();
 // ================================
 // ✅ Middleware
 // ================================
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000"], // add your frontend URLs
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // Vite dev
+      "http://localhost:3000", // React CRA dev
+      "https://yourfrontend.netlify.app", // <-- add Netlify domain later
+    ],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ================================
-// ✅ File paths
+// ✅ Paths setup
 // ================================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve uploaded images statically
+// ✅ Serve local assets (images) statically
+app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Optional: direct file access
-app.get("/uploads/:filename", (req, res) => {
-  const filePath = path.join(__dirname, "uploads", req.params.filename);
+// Optional file access route
+app.get("/assets/:filename", (req, res) => {
+  const filePath = path.join(__dirname, "public/assets", req.params.filename);
   res.sendFile(filePath);
 });
 
@@ -56,7 +63,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 
 // Default route
-app.get("/", (req, res) => res.send("Aquarium Shop Backend is running"));
+app.get("/", (req, res) => res.send("🐠 Aquarium Shop Backend is running"));
 
 // 404 handler
 app.use((req, res, next) => {
@@ -73,4 +80,6 @@ app.use((err, req, res, next) => {
 // ✅ Start Server
 // ================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`✅ Server running on port ${PORT}`)
+);

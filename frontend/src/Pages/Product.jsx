@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 
-// ✅ Components
+// Components
 import Header from "../Main/Header.jsx";
 import Footer from "../Main/Footer.jsx";
 import ProductDetailsPage from "../Components/Product/ProductDetails.jsx";
@@ -10,7 +10,7 @@ import ProductRelated from "../Components/Product/ProductRelated.jsx";
 import ProductSimilar from "../Components/Product/ProductSimilar.jsx";
 import ProductRecentViews from "../Components/Product/ProductRecentViews.jsx";
 
-// ✅ API
+// API
 import { getProductById } from "../api/api.js";
 
 export default function ProductPage({ isLoggedIn, username, onLogout }) {
@@ -18,7 +18,6 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Scroll to top and fetch product on id change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -26,7 +25,7 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
       try {
         setLoading(true);
         const res = await getProductById(id);
-        setProduct(res?.data || null);
+        setProduct(res || null);
       } catch (err) {
         console.error("Failed to fetch product:", err);
         setProduct(null);
@@ -38,14 +37,15 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
     fetchProduct();
   }, [id]);
 
-  // ✅ Categories for similar products (mock or replace with API)
-  const categories = [
-    { title: "Coral", data: [] },
-    { title: "Hunt", data: [] },
-    { title: "Fish", data: [] },
-    { title: "Tank", data: [] },
-    { title: "Food", data: [] },
-  ];
+  const categories = product?.category
+    ? [{ title: product.category }]
+    : [
+        { title: "Coral" },
+        { title: "Hunt" },
+        { title: "Fish" },
+        { title: "Tank" },
+        { title: "Food" },
+      ];
 
   if (loading) {
     return (
@@ -79,15 +79,10 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      {/* ✅ Header */}
       <Header isLoggedIn={isLoggedIn} username={username} onLogout={onLogout} />
 
-      {/* ✅ Main Content */}
       <main className="flex-1 w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 py-6">
-        {/* Spacer for fixed header */}
-        <div className="h-[80px] md:h-[100px]"></div>
-
-        {/* Back Links */}
+        <div className="h-[80px] md:h-[100px]" />
         <div className="flex flex-wrap gap-3 mb-6">
           <Link
             to="/shop"
@@ -97,23 +92,21 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
           </Link>
         </div>
 
-        {/* ✅ Product Details */}
-        <ProductDetailsPage />
+        <ProductDetailsPage product={product} />
+        <ProductFeatures product={product} />
 
-        {/* ✅ Features */}
-        <ProductFeatures />
+        {/* Related Products by category */}
+        {product._id && product.category && (
+          <ProductRelated
+            currentProductId={product._id}
+            category={product.category}
+          />
+        )}
 
-        {/* ✅ Related products slider (guard product._id) */}
-        {product._id && <ProductRelated currentProductId={product._id} />}
-
-        <div className="py-5"></div>
-
-        {/* ✅ Similar Products */}
+        <div className="py-5" />
         <ProductSimilar categories={categories} />
+        <div className="py-5" />
 
-        <div className="py-5"></div>
-
-        {/* ✅ Recently Viewed (mock data) */}
         <ProductRecentViews
           recent={[
             { id: 1001, name: "Adolfo s cory", image: "/assets/fish/fish/Adolfo s cory.png" },
@@ -123,7 +116,6 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
         />
       </main>
 
-      {/* ✅ Footer */}
       <Footer />
     </div>
   );

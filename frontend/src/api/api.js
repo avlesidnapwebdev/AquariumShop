@@ -3,13 +3,14 @@ import axios from "axios";
 /* ============================================================
    ✅ BASE URL CONFIGURATION
 ============================================================ */
-const envUrl =
-  import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL;
+const envUrl = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL;
+
 const normalizeBase = (url) => {
   if (!url) return "http://localhost:5000/api";
   const trimmed = url.replace(/\/+$/, "");
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
+
 const BASE = normalizeBase(envUrl);
 
 /* ============================================================
@@ -55,9 +56,25 @@ export const loginAPI = (data) => API.post("/auth/login", data);
 
 /* ============================================================
    ✅ PRODUCT ENDPOINTS
+   - Returns full URLs for images
 ============================================================ */
-export const getProducts = () => API.get("/products");
-export const getProductById = (id) => API.get(`/products/${id}`);
+export const getProducts = async () => {
+  const res = await API.get("/products");
+  return res.data.map((p) => ({
+    ...p,
+    image: p.image?.startsWith("http") ? p.image : `${BASE.replace("/api", "")}${p.image}`,
+  }));
+};
+
+export const getProductById = async (id) => {
+  const res = await API.get(`/products/${id}`);
+  const p = res.data;
+  return {
+    ...p,
+    image: p.image?.startsWith("http") ? p.image : `${BASE.replace("/api", "")}${p.image}`,
+  };
+};
+
 export const createProduct = (data) => API.post("/products", data);
 export const updateProduct = (id, data) => API.put(`/products/${id}`, data);
 export const deleteProduct = (id) => API.delete(`/products/${id}`);
@@ -103,11 +120,9 @@ export const updateProfileAPI = (formData) =>
   });
 
 export const addAddress = (data) => API.post("/users/addresses", data);
-export const updateAddress = (id, data) =>
-  API.put(`/users/addresses/${id}`, data);
+export const updateAddress = (id, data) => API.put(`/users/addresses/${id}`, data);
 export const removeAddress = (id) => API.delete(`/users/addresses/${id}`);
-export const setDefaultAddress = (id) =>
-  API.put(`/users/addresses/default/${id}`);
+export const setDefaultAddress = (id) => API.put(`/users/addresses/default/${id}`);
 
 export const addCard = (data) => API.post("/users/cards", data);
 export const removeCard = (id) => API.delete(`/users/cards/${id}`);

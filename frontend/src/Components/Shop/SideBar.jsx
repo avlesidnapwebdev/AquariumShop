@@ -6,47 +6,30 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Sync all filters from URL query params on load or URL change
+  // Sync filters from URL query params on load or URL change
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const categoryFromUrl = params.get("category") || "";
     const priceFromUrl = params.get("price") || "";
     const sortFromUrl = params.get("sort") || "Featured";
 
-    setFilters((prev) => ({
+    setFilters({
       category: categoryFromUrl,
       price: priceFromUrl,
       sort: sortFromUrl,
-    }));
+    });
   }, [location.search, setFilters]);
 
   const updateFilter = (newFilter) => {
     const updatedFilters = { ...filters, ...newFilter };
     setFilters(updatedFilters);
 
-    // Update URL query params for all filters
-    const params = new URLSearchParams(location.search);
+    const params = new URLSearchParams();
 
-    // Category
-    if (updatedFilters.category) {
-      params.set("category", updatedFilters.category);
-    } else {
-      params.delete("category");
-    }
-
-    // Price
-    if (updatedFilters.price) {
-      params.set("price", updatedFilters.price);
-    } else {
-      params.delete("price");
-    }
-
-    // Sort
-    if (updatedFilters.sort && updatedFilters.sort !== "Featured") {
+    if (updatedFilters.category) params.set("category", updatedFilters.category);
+    if (updatedFilters.price) params.set("price", updatedFilters.price);
+    if (updatedFilters.sort && updatedFilters.sort !== "Featured")
       params.set("sort", updatedFilters.sort);
-    } else {
-      params.delete("sort");
-    }
 
     navigate({ search: params.toString() }, { replace: true });
   };
@@ -58,12 +41,12 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
 
   const renderFilters = () => (
     <>
-      {/* Category */}
+      {/* Category Filter */}
       <div className="mb-6">
         <h4 className="font-semibold mb-2">Category</h4>
         {counts.categories.map((cat) => (
-          <label key={cat.name} className="flex justify-between items-center">
-            <div>
+          <label key={cat.name} className="flex justify-between items-center mb-1 cursor-pointer">
+            <div className="flex items-center">
               <input
                 type="radio"
                 name="category"
@@ -76,17 +59,15 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
             <span className="text-gray-500 ml-2">({cat.count})</span>
           </label>
         ))}
-        <div className="mt-2">
-          <button
-            className="text-sm text-blue-600"
-            onClick={() => updateFilter({ category: "" })}
-          >
-            Clear
-          </button>
-        </div>
+        <button
+          className="text-sm text-blue-600 mt-2 hover:underline"
+          onClick={() => updateFilter({ category: "" })}
+        >
+          Clear
+        </button>
       </div>
 
-      {/* Price */}
+      {/* Price Filter */}
       <div className="mb-6">
         <h4 className="font-semibold mb-2">Price</h4>
         <div className="flex flex-col gap-2">
@@ -94,28 +75,25 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
             <button
               key={range.range}
               onClick={() => updateFilter({ price: range.range })}
-              className={`flex justify-between px-3 py-1 rounded border text-sm ${
-                filters.price === range.range
+              className={`flex justify-between px-3 py-1 rounded border text-sm transition-colors duration-200 ${filters.price === range.range
                   ? "bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+                }`}
             >
               <span>₹{range.range}</span>
               <span className="ml-4 text-gray-500">({range.count})</span>
             </button>
           ))}
         </div>
-        <div className="mt-3">
-          <button
-            className="text-sm text-blue-600"
-            onClick={() => updateFilter({ price: "" })}
-          >
-            Clear
-          </button>
-        </div>
+        <button
+          className="text-sm text-blue-600 mt-3 hover:underline"
+          onClick={() => updateFilter({ price: "" })}
+        >
+          Clear
+        </button>
       </div>
 
-      {/* Sort */}
+      {/* Sort Filter */}
       <div className="mb-6">
         <h4 className="font-semibold mb-2">Sort By</h4>
         <div className="flex flex-wrap gap-2">
@@ -123,11 +101,10 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
             <button
               key={option}
               onClick={() => updateFilter({ sort: option })}
-              className={`px-3 py-1 rounded border text-sm ${
-                filters.sort === option
+              className={`px-3 py-1 rounded border text-sm transition-colors duration-200 ${filters.sort === option
                   ? "bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+                }`}
             >
               {option}
             </button>
@@ -135,11 +112,11 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
         </div>
       </div>
 
-      {/* Clear All */}
+      {/* Clear All Filters */}
       <div className="mt-6">
         <button
           onClick={clearAll}
-          className="w-full text-left px-3 py-2 border rounded text-sm text-red-600 hover:bg-red-50"
+          className="w-full text-left px-3 py-2 border rounded text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
         >
           Clear All Filters
         </button>
@@ -155,7 +132,7 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
         {renderFilters()}
       </aside>
 
-      {/* Mobile/Tablet Sidebar Overlay */}
+      {/* Mobile Sidebar Overlay */}
       {isOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex md:hidden">
           <div className="absolute inset-0" onClick={toggleSidebar} />

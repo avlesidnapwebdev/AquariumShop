@@ -21,10 +21,9 @@ export default function Coral() {
   useEffect(() => {
     const fetchCoralProducts = async () => {
       try {
-        const { data } = await getProducts();
-        if (data && Array.isArray(data)) {
-          // ✅ Filter only Coral products
-          const coralItems = data.filter(
+        const allProducts = await getProducts(); // ✅ Use directly, no { data }
+        if (Array.isArray(allProducts)) {
+          const coralItems = allProducts.filter(
             (item) =>
               item.category?.toLowerCase() === "coral" ||
               item.category?.toLowerCase() === "coral reef"
@@ -42,7 +41,7 @@ export default function Coral() {
   }, []);
 
   /* ============================================================
-     ✅ Infinite Scroll Logic (Same as before)
+     ✅ Infinite Scroll Logic
   ============================================================ */
   const scroll = (scrollOffset) => {
     if (!scrollRef.current) return;
@@ -78,6 +77,9 @@ export default function Coral() {
     setTimeout(() => setPopupMessage(""), 2000);
   };
 
+  /* ============================================================
+     ✅ Loading / Empty State
+  ============================================================ */
   if (loading) {
     return (
       <section className="w-full min-h-[40vh] flex items-center justify-center bg-gradient-to-tr from-sky-400 to-blue-600">
@@ -140,7 +142,6 @@ export default function Coral() {
               key={`${item._id || item.id}-${index}`}
               className="relative group flex-none w-56 sm:w-64 md:w-72 h-auto rounded-xl bg-white shadow-md flex flex-col transition-transform transform-gpu hover:scale-105 hover:z-20"
             >
-              {/* ✅ Wrap Image + Title in Link */}
               <Link to={`/product/${item._id}`}>
                 <div className="h-40 flex justify-center items-center p-4">
                   <img
@@ -159,17 +160,10 @@ export default function Coral() {
                 </div>
               </Link>
 
-              {/* Action Buttons */}
               <div className="flex justify-around items-center w-full border-t p-2">
-                {/* Add to Cart */}
                 <button
                   className="flex items-center gap-2 text-blue-600 font-semibold hover:text-red-600 transition"
                   onClick={() => {
-                    if (!item._id) {
-                      console.error("❌ product._id missing:", item);
-                      showPopup("⚠️ Product ID missing");
-                      return;
-                    }
                     addToCart(item);
                     showPopup("✅ Added to Cart");
                   }}
@@ -178,15 +172,9 @@ export default function Coral() {
                   <span className="hidden sm:inline">Cart</span>
                 </button>
 
-                {/* Add to Wishlist */}
                 <button
                   className="flex items-center gap-2 text-blue-500 hover:text-red-600 font-semibold transition"
                   onClick={() => {
-                    if (!item._id) {
-                      console.error("❌ product._id missing:", item);
-                      showPopup("⚠️ Product ID missing");
-                      return;
-                    }
                     addToWishlist(item);
                     showPopup("❤️ Added to Wishlist");
                   }}

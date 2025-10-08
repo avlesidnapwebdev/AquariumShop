@@ -21,9 +21,9 @@ export default function Tank() {
   useEffect(() => {
     const fetchTankProducts = async () => {
       try {
-        const { data } = await getProducts();
-        if (data && Array.isArray(data)) {
-          const tankItems = data.filter(
+        const allProducts = await getProducts(); // ✅ Use directly
+        if (Array.isArray(allProducts)) {
+          const tankItems = allProducts.filter(
             (item) => item.category?.toLowerCase() === "tank"
           );
           setTankProducts(tankItems);
@@ -75,6 +75,9 @@ export default function Tank() {
     setTimeout(() => setPopupMessage(""), 2000);
   };
 
+  /* ============================================================
+     ✅ Loading / Empty State
+  ============================================================ */
   if (loading) {
     return (
       <section className="w-full min-h-[40vh] flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-400">
@@ -160,7 +163,6 @@ export default function Tank() {
 
               {/* Action Buttons */}
               <div className="flex justify-around items-center w-full border-t p-2">
-                {/* Add to Cart */}
                 <button
                   className="flex items-center gap-2 text-blue-600 font-semibold hover:text-red-600 transition"
                   onClick={() => {
@@ -173,7 +175,6 @@ export default function Tank() {
                   <span className="hidden sm:inline">Cart</span>
                 </button>
 
-                {/* Add to Wishlist */}
                 <button
                   className="flex items-center gap-2 text-blue-500 hover:text-red-600 font-semibold transition"
                   onClick={() => {

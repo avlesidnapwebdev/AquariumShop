@@ -30,7 +30,7 @@ export default function ProductRecentViews({ recent }) {
       <div className="relative w-full mt-6 overflow-visible">
         {/* Scroll Left */}
         <button
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 text-white text-2xl md:text-3xl rounded-full px-3 py-1 z-50 hover:bg-purple-600 transition"
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 text-white text-2xl md:text-3xl rounded-full px-3 py-1 z-40 hover:bg-purple-600 transition"
           onClick={() => scroll(-300)}
           aria-label="scroll left"
         >
@@ -79,7 +79,7 @@ export default function ProductRecentViews({ recent }) {
 
         {/* Scroll Right */}
         <button
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 text-white text-2xl md:text-3xl rounded-full px-3 py-1 z-1 hover:bg-purple-600 transition"
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 text-white text-2xl md:text-3xl rounded-full px-3 py-1 z-40 hover:bg-purple-600 transition"
           onClick={() => scroll(300)}
           aria-label="scroll right"
         >

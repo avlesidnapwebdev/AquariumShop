@@ -19,8 +19,7 @@ export default function Fish() {
   useEffect(() => {
     async function fetchFishProducts() {
       try {
-        const res = await getProducts();
-        const allProducts = res.data || [];
+        const allProducts = await getProducts(); // ✅ Corrected here
 
         // Filter for Fish category only
         const fishProducts = allProducts.filter(
