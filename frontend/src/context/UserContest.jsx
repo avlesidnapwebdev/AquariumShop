@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getProfile } from "../api/api.js";
+import { getProfileAPI } from "../api/api.js";
 
 const AuthContext = createContext();
 
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
             setUser(JSON.parse(savedUser));
             setLoading(false);
         } else if (token) {
-            getProfile()
+            getProfileAPI()
                 .then((res) => {
                     const profile = res.data;
                     const userData = {

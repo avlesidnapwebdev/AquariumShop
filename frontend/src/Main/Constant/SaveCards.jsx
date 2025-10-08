@@ -3,7 +3,7 @@ import { IoClose } from "react-icons/io5";
 import {
   addCard,
   removeCard,
-  getProfile,
+  getProfileAPI,
   setDefaultCard,
 } from "../../api/api.js";
 
@@ -52,7 +52,7 @@ export default function SaveCards({ open, setOpen, onSelect }) {
 
     const fetchCards = async () => {
       try {
-        const { data } = await getProfile();
+        const { data } = await getProfileAPI();
         const fetchedCards = data.cards || [];
         setCards(fetchedCards);
 

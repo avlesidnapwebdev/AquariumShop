@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { IoClose } from "react-icons/io5";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import {
-  getProfile,
+  getProfileAPI,
   addAddress,
   updateAddress,
   removeAddress,
@@ -41,7 +41,7 @@ export default function SaveAddress({ open, setOpen, onSelect }) {
 
   const fetchAddresses = async () => {
     try {
-      const res = await getProfile();
+      const res = await getProfileAPI();
       if (res.data?.addresses) {
         setAddresses(res.data.addresses);
         const def = res.data.addresses.find((a) => a.isDefault);

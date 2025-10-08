@@ -5322,7 +5322,7 @@ const productsData = [
     "_id": "68e4e8d398a9cd3e2365714c"
   },
   {
-    "name": "black moscow guppy",
+    "name": "black moscow guppy male",
     "price": 99,
     "stock": 5,
     "totalStock": 85,
@@ -5332,7 +5332,7 @@ const productsData = [
       "black moscow guppy",
       "fish"
     ],
-    "image": "/assets/fish/fish/black moscow guppy(1).png",
+    "image": "/assets/fish/fish/black moscow guppy male.png",
     "description": "black moscow guppy is a high-quality fish item for aquarium enthusiasts.",
     "additionalInfo": [
       "Water type: Freshwater",
@@ -5373,10 +5373,10 @@ const productsData = [
         "text": "Worth the price, tank looks better now."
       }
     ],
-    "_id": "68e4e8d498a9cd3e2365714f"
+    "_id": "68e4e8d498a9cd3e23657152"
   },
   {
-    "name": "black moscow guppy",
+    "name": "black moscow guppy female",
     "price": 49,
     "stock": 36,
     "totalStock": 41,
@@ -5386,7 +5386,7 @@ const productsData = [
       "black moscow guppy",
       "fish"
     ],
-    "image": "/assets/fish/fish/black moscow guppy.png",
+    "image": "/assets/fish/fish/black moscow guppy female.png", 
     "description": "black moscow guppy is a high-quality fish item for aquarium enthusiasts.",
     "additionalInfo": [
       "Water type: Freshwater",

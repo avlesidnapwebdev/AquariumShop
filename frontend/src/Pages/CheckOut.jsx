@@ -8,7 +8,7 @@ import SaveCards from "../Main/Constant/SaveCards.jsx";
 import SaveAddress from "../Main/Constant/SaveAddress.jsx";
 import {
   placeOrder,
-  getProfile,
+  getProfileAPI,
   createRazorpayOrder,
   verifyRazorpayPayment,
 } from "../api/api.js";
@@ -44,7 +44,7 @@ export default function CheckOut() {
 
   const fetchProfile = async () => {
     try {
-      const { data } = await getProfile();
+      const { data } = await getProfileAPI();
       setAddresses(data.addresses || []);
       setCards(data.cards || []);
     } catch (err) {

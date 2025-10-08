@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { login as loginAPI, register as registerAPI } from "../api/api.js";
+import { loginAPI, registerAPI } from "../api/api.js"; // ✅ fixed import
 
 export default function Login({ onLogin }) {
   const navigate = useNavigate();
