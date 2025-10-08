@@ -1,13 +1,12 @@
-// src/Components/Product/ProductRelated.jsx
 import React, { useRef, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { FaHeart } from "react-icons/fa";
 import { FiShoppingCart } from "react-icons/fi";
 import { useCart } from "../../Main/Constant/AddToCart.jsx";
 import { useWishlist } from "../../Main/Constant/Wishlist.jsx";
-import { getProducts } from "../../api/api.js"; // ✅ fetch products from backend
+import { getProducts } from "../../api/api.js";
 
-export default function ProductRelated() {
+export default function ProductRelated({ currentProductId }) {
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
   const scrollRef = useRef();
@@ -16,31 +15,37 @@ export default function ProductRelated() {
   const [popupMessage, setPopupMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch products from backend API
+  // Fetch products from backend
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const { data } = await getProducts(); // calls GET /products
-        // shuffle results for random related items
-        const shuffled = [...data].sort(() => 0.5 - Math.random());
-        setProducts(shuffled.slice(0, 12));
+        const { data } = await getProducts();
+
+        // Exclude current product
+        const filtered = data.filter(p => p._id !== currentProductId);
+
+        // Shuffle products randomly
+        const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+
+        setProducts(shuffled.slice(0, 12)); // show max 12 products
       } catch (err) {
         console.error("❌ Failed to load products:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchProducts();
-  }, []);
 
-  // ✅ Scroll logic
+    fetchProducts();
+  }, [currentProductId]);
+
+  // Scroll function
   const scroll = (scrollOffset) => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollLeft += scrollOffset;
   };
 
-  // ✅ Popup
+  // Popup
   const showPopup = (msg) => {
     setPopupMessage(msg);
     setTimeout(() => setPopupMessage(""), 2000);
@@ -93,9 +98,9 @@ export default function ProductRelated() {
           ref={scrollRef}
           className="flex gap-4 md:gap-6 px-4 md:px-10 scroll-smooth cursor-grab active:cursor-grabbing no-scrollbar items-center overflow-x-auto overflow-y-visible py-10"
         >
-          {[...products, ...products, ...products].map((item, index) => (
+          {products.map((item, index) => (
             <div
-              key={`${item._id}-${index}`}
+              key={item._id || index}
               className="relative group flex-none w-56 sm:w-64 md:w-72 h-auto rounded-xl bg-white shadow-md flex flex-col transition-transform transform-gpu hover:scale-105 hover:z-20"
             >
               {/* Product Link */}

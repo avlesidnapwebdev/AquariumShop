@@ -1,4 +1,3 @@
-// src/Components/Product/ProductDetailsPage.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaHeart } from "react-icons/fa";
@@ -8,7 +7,8 @@ import Stars from "../../Main/Constant/Stars.jsx";
 import { getProductById } from "../../api/api.js";
 
 export default function ProductDetailsPage() {
-  const { productId } = useParams();
+  // ✅ Use the correct param name
+  const { id } = useParams(); // Make sure your route is like "/product/:id"
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
@@ -20,30 +20,37 @@ export default function ProductDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fetch product from backend
+  // ✅ Fetch product safely
   useEffect(() => {
+    if (!id) {
+      setError("Invalid product ID.");
+      setLoading(false);
+      return;
+    }
+
     const fetchProduct = async () => {
       setLoading(true);
       setError("");
       try {
-        const { data } = await getProductById(productId);
-        setProduct(data);
+        const res = await getProductById(id);
+        setProduct(res?.data || null);
+        if (!res?.data) setError("Product not found.");
       } catch (err) {
         console.error("Failed to fetch product:", err);
-        setError("Product not found.");
+        setError("Failed to fetch product.");
       } finally {
         setLoading(false);
       }
     };
     fetchProduct();
-  }, [productId]);
+  }, [id]);
 
   if (loading) {
     return <p className="text-center py-10 text-gray-700">Loading product...</p>;
   }
 
   if (error || !product) {
-    return <p className="text-center py-10 text-red-600">{error || "Product not found."}</p>;
+    return <p className="text-center py-10 text-red-600">{error}</p>;
   }
 
   const showPopup = (msg) => {

@@ -1,4 +1,3 @@
-// src/Pages/ProductPage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 
@@ -19,14 +18,15 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Scroll to top when product id changes
+  // ✅ Scroll to top and fetch product on id change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     const fetchProduct = async () => {
       try {
+        setLoading(true);
         const res = await getProductById(id);
-        setProduct(res.data);
+        setProduct(res?.data || null);
       } catch (err) {
         console.error("Failed to fetch product:", err);
         setProduct(null);
@@ -38,7 +38,7 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
     fetchProduct();
   }, [id]);
 
-  // ✅ Categories for similar products (optional: adjust if needed)
+  // ✅ Categories for similar products (mock or replace with API)
   const categories = [
     { title: "Coral", data: [] },
     { title: "Hunt", data: [] },
@@ -63,7 +63,6 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
     return (
       <>
         <Header isLoggedIn={isLoggedIn} username={username} onLogout={onLogout} />
-
         <div className="w-full px-4 md:px-8 lg:px-12 py-10 text-center min-h-[60vh] flex flex-col items-center justify-center">
           <h2 className="text-xl font-semibold text-gray-800">Product not found</h2>
           <Link
@@ -73,7 +72,6 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
             ← Back to Shop
           </Link>
         </div>
-
         <Footer />
       </>
     );
@@ -105,8 +103,8 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
         {/* ✅ Features */}
         <ProductFeatures />
 
-        {/* ✅ Related products slider */}
-        <ProductRelated productId={product._id} />
+        {/* ✅ Related products slider (guard product._id) */}
+        {product._id && <ProductRelated productId={product._id} />}
 
         <div className="py-5"></div>
 
@@ -115,24 +113,12 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
 
         <div className="py-5"></div>
 
-        {/* ✅ Recently Viewed */}
+        {/* ✅ Recently Viewed (mock data) */}
         <ProductRecentViews
           recent={[
-            {
-              id: 1001,
-              name: "Adolfo s cory",
-              image: "/assets/fish/fish/Adolfo s cory.png",
-            },
-            {
-              id: 1002,
-              name: "Adonis tetra",
-              image: "/assets/fish/fish/Adonis tetra.png",
-            },
-            {
-              id: 1003,
-              name: "African peacock cichlid",
-              image: "/assets/fish/fish/African peacock cichlid.png",
-            },
+            { id: 1001, name: "Adolfo s cory", image: "/assets/fish/fish/Adolfo s cory.png" },
+            { id: 1002, name: "Adonis tetra", image: "/assets/fish/fish/Adonis tetra.png" },
+            { id: 1003, name: "African peacock cichlid", image: "/assets/fish/fish/African peacock cichlid.png" },
           ]}
         />
       </main>
