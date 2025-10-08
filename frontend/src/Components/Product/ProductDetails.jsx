@@ -1,48 +1,75 @@
-import React, { useState } from "react";
+// src/Components/Product/ProductDetailsPage.jsx
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { FaHeart } from "react-icons/fa";
 import { useCart } from "../../Main/Constant/AddToCart.jsx";
 import { useWishlist } from "../../Main/Constant/Wishlist.jsx";
-import { useNavigate } from "react-router-dom";
 import Stars from "../../Main/Constant/Stars.jsx";
- 
-export default function ProductDetails({ product }) {
-  const [qty, setQty] = useState(1);
+import { getProductById } from "../../api/api.js";
+
+export default function ProductDetailsPage() {
+  const { productId } = useParams();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
-  const navigate = useNavigate();
 
-  // ✅ Popup message state
+  const [product, setProduct] = useState(null);
+  const [qty, setQty] = useState(1);
   const [popupMessage, setPopupMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("description");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Fetch product from backend
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { data } = await getProductById(productId);
+        setProduct(data);
+      } catch (err) {
+        console.error("Failed to fetch product:", err);
+        setError("Product not found.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [productId]);
+
+  if (loading) {
+    return <p className="text-center py-10 text-gray-700">Loading product...</p>;
+  }
+
+  if (error || !product) {
+    return <p className="text-center py-10 text-red-600">{error || "Product not found."}</p>;
+  }
+
   const showPopup = (msg) => {
     setPopupMessage(msg);
     setTimeout(() => setPopupMessage(""), 2000);
   };
 
-  // ✅ Tabs state
-  const [activeTab, setActiveTab] = useState("description");
-
-  // ✅ Handle Buy Now → redirect to buy now page
-  const handleBuyNow = () => {
-    const buyItem = { ...product, qty };
-    addToCart(buyItem); // optional: keep in cart also
-    navigate("/buy-now", { state: { cartItems: [buyItem] } });
-  };
-
-  // ✅ Handle Add to Cart
   const handleAddToCart = () => {
     addToCart({ ...product, qty });
     showPopup(`✅ ${qty} × ${product.name} added to Cart`);
   };
 
-  // ✅ Handle Add to Wishlist
   const handleAddToWishlist = () => {
     addToWishlist(product);
     showPopup(`❤️ ${product.name} added to Wishlist`);
   };
 
+  const handleBuyNow = () => {
+    const buyItem = { ...product, qty };
+    addToCart(buyItem);
+    navigate("/buy-now", { state: { cartItems: [buyItem] } });
+  };
+
   return (
-    <div className="relative">
-      {/* ✅ Popup Notification */}
+    <div className="relative p-4 md:p-10">
+      {/* Popup */}
       {popupMessage && (
         <div className="fixed top-24 right-5 bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow-lg z-50 animate-fade-in-out">
           {popupMessage}
@@ -50,7 +77,7 @@ export default function ProductDetails({ product }) {
       )}
 
       <div className="grid md:grid-cols-2 gap-6 mb-8 items-start">
-        {/* ✅ Product Image */}
+        {/* Product Image */}
         <div className="border p-4 rounded-lg flex items-center justify-center w-full max-w-md h-auto mx-auto">
           <img
             src={product.image}
@@ -59,73 +86,60 @@ export default function ProductDetails({ product }) {
           />
         </div>
 
-        {/* ✅ Product Info */}
+        {/* Product Info */}
         <div className="w-full">
           <h1 className="text-2xl font-bold uppercase mb-2 text-blue-500">{product.name}</h1>
-          <p className="text-blue-700 text-3xl font-semibold mb-2">
-            ₹{product.price}
-          </p>
+          <p className="text-blue-700 text-3xl font-semibold mb-2">₹{product.price}</p>
 
-          {/* ✅ Star Rating */}
+          {/* Star Rating */}
           <div className="flex items-center gap-2 mb-2">
             <Stars rating={product.rating} />
             <span className="text-gray-600 text-sm">
-              ({product.reviews?.length || product.reviews} Reviews)
+              ({product.reviews?.length || 0} Reviews)
             </span>
           </div>
 
           <p className="mb-2 text-gray-700">
-            Available: {product.stock}/{product.totalStock}
+            Available: {product.stock}/{product.totalStock || product.stock}
           </p>
 
-          {/* ✅ Quantity Selector */}
-<div className="flex items-center gap-2 my-4">
-  {/* Decrease */}
-  <button
-    onClick={() => setQty(Math.max(1, qty - 1))}
-    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-red-600"
-  >
-    -
-  </button>
+          {/* Quantity Selector */}
+          <div className="flex items-center gap-2 my-4">
+            <button
+              onClick={() => setQty(Math.max(1, qty - 1))}
+              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-red-600"
+            >
+              -
+            </button>
+            <input
+              type="number"
+              value={qty}
+              min={1}
+              onChange={(e) => setQty(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-16 text-center border border-gray-300 rounded-lg py-1 font-semibold text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-500"
+            />
+            <button
+              onClick={() => setQty(qty + 1)}
+              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              +
+            </button>
+          </div>
 
-  {/* Editable Input */}
-  <input
-    type="number"
-    value={qty}
-    onChange={(e) => {
-      const val = parseInt(e.target.value, 10);
-      setQty(isNaN(val) || val < 1 ? 1 : val);
-    }}
-    className="w-16 text-center border border-gray-300 rounded-lg py-1 font-semibold text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-500"
-    min="1"
-  />
-
-  {/* Increase */}
-  <button
-    onClick={() => setQty(qty + 1)}
-    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-  >
-    +
-  </button>
-</div>
-
-
-          {/* ✅ Action Buttons */}
-          <div className="flex items-center gap-4 my-4">
+          {/* Action Buttons */}
+          <div className="flex items-center gap-4 my-4 flex-wrap">
             <button
               onClick={handleBuyNow}
               className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
             >
               Buy Now
             </button>
-
             <button
               onClick={handleAddToCart}
               className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
             >
               Add to Cart
             </button>
-
             <button
               onClick={handleAddToWishlist}
               className="p-2 border rounded hover:bg-red-100"
@@ -134,55 +148,52 @@ export default function ProductDetails({ product }) {
             </button>
           </div>
 
-          {/* ✅ Categories & Tags */}
+          {/* Category & Tags */}
           <p className="text-gray-600">Category: {product.category}</p>
           <p className="text-gray-600">
-            Tags: {product.tags && product.tags.join(", ")}
+            Tags: {product.tags?.join(", ") || "None"}
           </p>
 
-          {/* ✅ Tabs */}
+          {/* Tabs */}
           <div className="my-8">
-            <div className="flex gap-6 border-b pb-2 mb-4">
+            <div className="flex gap-6 border-b pb-2 mb-4 flex-wrap">
               <button
                 onClick={() => setActiveTab("description")}
-                className={`font-semibold ${
-                  activeTab === "description"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-600"
-                }`}
+                className={`font-semibold ${activeTab === "description"
+                  ? "text-purple-600 border-b-2 border-purple-600"
+                  : "text-gray-600"
+                  }`}
               >
                 Description
               </button>
               <button
                 onClick={() => setActiveTab("additional")}
-                className={`font-semibold ${
-                  activeTab === "additional"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-600"
-                }`}
+                className={`font-semibold ${activeTab === "additional"
+                  ? "text-purple-600 border-b-2 border-purple-600"
+                  : "text-gray-600"
+                  }`}
               >
                 Additional Info
               </button>
               <button
                 onClick={() => setActiveTab("reviews")}
-                className={`font-semibold ${
-                  activeTab === "reviews"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-600"
-                }`}
+                className={`font-semibold ${activeTab === "reviews"
+                  ? "text-purple-600 border-b-2 border-purple-600"
+                  : "text-gray-600"
+                  }`}
               >
-                Reviews ({product.reviews?.length || product.reviews})
+                Reviews ({product.reviews?.length || 0})
               </button>
             </div>
 
-            {/* ✅ Tab Content */}
+            {/* Tab Content */}
             {activeTab === "description" && (
               <p className="text-gray-700">{product.description}</p>
             )}
 
             {activeTab === "additional" && (
               <div className="text-gray-700">
-                {product.additionalInfo ? (
+                {product.additionalInfo?.length > 0 ? (
                   <ul className="list-disc ml-6">
                     {product.additionalInfo.map((info, i) => (
                       <li key={i}>{info}</li>
@@ -195,20 +206,18 @@ export default function ProductDetails({ product }) {
             )}
 
             {activeTab === "reviews" && (
-              <div className="text-gray-700">
-                {product.reviews && product.reviews.length > 0 ? (
-                  <div className="max-h-60 overflow-y-auto pr-2">
-                    <ul className="space-y-3">
-                      {product.reviews.map((rev, i) => (
-                        <li
-                          key={i}
-                          className="border p-3 rounded shadow-sm bg-gray-50"
-                        >
-                          ⭐ {rev.rating} – {rev.text}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              <div className="text-gray-700 max-h-60 overflow-y-auto pr-2">
+                {product.reviews?.length > 0 ? (
+                  <ul className="space-y-3">
+                    {product.reviews.map((rev, i) => (
+                      <li
+                        key={i}
+                        className="border p-3 rounded shadow-sm bg-gray-50"
+                      >
+                        ⭐ {rev.rating} – {rev.text}
+                      </li>
+                    ))}
+                  </ul>
                 ) : (
                   <p>No reviews yet.</p>
                 )}

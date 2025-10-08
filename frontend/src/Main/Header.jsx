@@ -1,9 +1,6 @@
 // Header.jsx
 import React, { useEffect, useState, useRef } from "react";
-// import logo from "/assets/AQualogo.png";
-// import searchIcon from "/assets/search.png";
 import { useCart } from "./Constant/AddToCart.jsx";
-// import data from "../Data/ProductsData.jsx";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FiShoppingBag } from "react-icons/fi";
 import { IoPersonCircle } from "react-icons/io5";
@@ -12,6 +9,7 @@ import { FaTimes, FaListUl } from "react-icons/fa";
 import AddToCartSidebar from "./Constant/AddToCartSidebar.jsx";
 import CategorySidebar from "./Constant/CategorySidebar.jsx";
 import AccountSidebar from "./Constant/AccountSidebar.jsx";
+import { getProducts } from "../api/api.js"; // ✅ Import API
 
 export default function Header({
   setQuery,
@@ -45,6 +43,7 @@ export default function Header({
   const [inputValue, setInputValue] = useState("");
   const [filteredResults, setFilteredResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
+  const [allProducts, setAllProducts] = useState([]); // ✅ Store all products
 
   // ✅ Restore login state on reload or page switch
   useEffect(() => {
@@ -61,6 +60,19 @@ export default function Header({
       setAuthState({ isLoggedIn: false, username: "", profilePic: "" });
     }
   }, [location.pathname]);
+
+  // ✅ Fetch all products once on mount
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await getProducts();
+        setAllProducts(res.data); // assuming res.data is an array of products
+      } catch (err) {
+        console.error("Failed to fetch products", err);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   // toggle helpers
   const toggleMenu = () => {
@@ -120,13 +132,15 @@ export default function Header({
         setShowResults(false);
       } else {
         const q = inputValue.toLowerCase();
-        const results = data.filter((it) => it.title.toLowerCase().includes(q));
+        const results = allProducts.filter((it) =>
+          it.name.toLowerCase().includes(q)
+        );
         setFilteredResults(results);
         setShowResults(true);
       }
     }, 250);
     return () => clearTimeout(id);
-  }, [inputValue]);
+  }, [inputValue, allProducts]);
 
   // scroll effects
   useEffect(() => {
@@ -238,16 +252,16 @@ export default function Header({
             <div className="absolute top-10 left-0 w-full bg-white text-black rounded-xl max-h-64 overflow-y-auto shadow-lg border z-50">
               {filteredResults.map((item) => (
                 <div
-                  key={item.id}
+                  key={item._id || item.id}
                   className="flex items-center gap-3 p-2 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSearchClick(item)}
                 >
                   <img
                     src={item.image}
-                    alt={item.title}
+                    alt={item.name}
                     className="w-10 h-10 object-cover rounded-lg"
                   />
-                  <span className="font-medium text-sm">{item.title}</span>
+                  <span className="font-medium text-sm">{item.name}</span>
                 </div>
               ))}
             </div>
@@ -309,16 +323,16 @@ export default function Header({
             <div className="absolute top-12 left-0 w-full bg-white text-black rounded-xl max-h-64 overflow-y-auto shadow-lg border z-50">
               {filteredResults.map((item) => (
                 <div
-                  key={item.id}
+                  key={item._id || item.id}
                   className="flex items-center gap-3 p-2 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSearchClick(item)}
                 >
                   <img
                     src={item.image}
-                    alt={item.title}
+                    alt={item.name}
                     className="w-10 h-10 object-cover rounded-lg"
                   />
-                  <span className="font-medium text-sm">{item.title}</span>
+                  <span className="font-medium text-sm">{item.name}</span>
                 </div>
               ))}
             </div>

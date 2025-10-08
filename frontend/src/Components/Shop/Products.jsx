@@ -1,20 +1,44 @@
 // src/Components/Shop/Products.jsx
-import React, { useState } from "react";
-import { Link } from "react-router-dom"; // ✅ Import Link
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useCart } from "../../Main/Constant/AddToCart.jsx";
 import { useWishlist } from "../../Main/Constant/Wishlist.jsx";
 import { FiShoppingCart } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
- 
-export default function Products({ products, view }) {
+import { getProducts } from "../../api/api.js";
+
+export default function Products({ view = "grid" }) {
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
 
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [popupMessage, setPopupMessage] = useState("");
+
+  // ✅ Show popup
   const showPopup = (msg) => {
     setPopupMessage(msg);
     setTimeout(() => setPopupMessage(""), 2000);
   };
+
+  // ✅ Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await getProducts();
+        setProducts(res.data); // Ensure your backend returns an array of products
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return <p className="text-center py-10 text-gray-700">Loading products...</p>;
+  }
 
   return (
     <div>
@@ -25,20 +49,19 @@ export default function Products({ products, view }) {
       )}
 
       {view === "grid" ? (
-        // ✅ Grid View
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {products.map(({ id, title, image, price }) => (
+          {products.map((product) => (
             <div
-              key={id}
+              key={product._id}
               className="relative group rounded-xl bg-white shadow-md flex flex-col transition transform hover:scale-105"
             >
-              {/* Wrap clickable part in Link */}
-              <Link to={`/product/${id}`} className="block flex-1">
+              {/* Product Link */}
+              <Link to={`/product/${product._id}`} className="block flex-1">
                 {/* Image */}
                 <div className="h-48 flex justify-center items-center p-4">
                   <img
-                    src={image}
-                    alt={title}
+                    src={product.image}
+                    alt={product.name}
                     className="max-h-full object-contain"
                   />
                 </div>
@@ -46,21 +69,21 @@ export default function Products({ products, view }) {
                 {/* Content */}
                 <div className="flex flex-col flex-1 p-0">
                   <p className="bg-blue-600 text-white font-bold text-sm rounded-r-md px-3 py-1 w-fit">
-                    ₹ {price}
+                    ₹ {product.price}
                   </p>
                   <h4 className="text-blue-600 font-bold text-base mt-2 line-clamp-2 pl-2">
-                    {title}
+                    {product.name}
                   </h4>
                 </div>
               </Link>
 
-              {/* Buttons */}
+              {/* Action Buttons */}
               <div className="flex justify-around items-center w-full border-t p-2">
                 <button
                   className="flex items-center gap-2 text-blue-600 font-semibold hover:text-red-600 transition"
                   onClick={() => {
-                    addToCart({ id, title, image, price });
-                    showPopup("✅ Added to Cart");
+                    addToCart({ ...product, qty: 1 });
+                    showPopup(`✅ ${product.name} added to Cart`);
                   }}
                 >
                   <FiShoppingCart size={20} />
@@ -69,8 +92,8 @@ export default function Products({ products, view }) {
                 <button
                   className="flex items-center gap-2 text-blue-500 hover:text-red-600 font-semibold transition"
                   onClick={() => {
-                    addToWishlist({ id, title, image, price });
-                    showPopup("❤️ Added to Wishlist");
+                    addToWishlist(product);
+                    showPopup(`❤️ ${product.name} added to Wishlist`);
                   }}
                 >
                   <FaHeart size={20} />
@@ -83,17 +106,17 @@ export default function Products({ products, view }) {
       ) : (
         // ✅ List View
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {products.map(({ id, title, image, price }) => (
+          {products.map((product) => (
             <div
-              key={id}
+              key={product._id}
               className="flex items-center gap-4 bg-white shadow-md rounded-lg p-4 border border-gray-200"
             >
-              {/* Image wrapped with Link */}
-              <Link to={`/product/${id}`}>
+              {/* Image */}
+              <Link to={`/product/${product._id}`}>
                 <div className="h-24 w-24 bg-gray-100 flex items-center justify-center rounded">
                   <img
-                    src={image}
-                    alt={title}
+                    src={product.image}
+                    alt={product.name}
                     className="max-h-full object-contain"
                   />
                 </div>
@@ -101,12 +124,12 @@ export default function Products({ products, view }) {
 
               {/* Details */}
               <div className="flex-1">
-                <Link to={`/product/${id}`}>
+                <Link to={`/product/${product._id}`}>
                   <h3 className="font-semibold text-blue-600 hover:underline">
-                    {title}
+                    {product.name}
                   </h3>
                 </Link>
-                <p className="text-gray-500">₹ {price}</p>
+                <p className="text-gray-500">₹ {product.price}</p>
               </div>
 
               {/* Buttons */}
@@ -114,8 +137,8 @@ export default function Products({ products, view }) {
                 <button
                   className="flex items-center gap-1 text-blue-600 font-semibold hover:text-red-600"
                   onClick={() => {
-                    addToCart({ id, title, image, price });
-                    showPopup("✅ Added to Cart");
+                    addToCart({ ...product, qty: 1 });
+                    showPopup(`✅ ${product.name} added to Cart`);
                   }}
                 >
                   <FiShoppingCart size={20} /> Cart
@@ -123,8 +146,8 @@ export default function Products({ products, view }) {
                 <button
                   className="flex items-center gap-1 text-blue-500 hover:text-red-600 font-semibold"
                   onClick={() => {
-                    addToWishlist({ id, title, image, price });
-                    showPopup("❤️ Added to Wishlist");
+                    addToWishlist(product);
+                    showPopup(`❤️ ${product.name} added to Wishlist`);
                   }}
                 >
                   <FaHeart size={20} /> Wishlist

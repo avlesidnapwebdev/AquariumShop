@@ -1,31 +1,53 @@
 import React, { useRef, useEffect, useState } from "react";
-import FoodData from "../../../Data/FoodData.jsx";
-import StarRate from "../../../Main/Constant/Stars.jsx";
 import { useCart } from "../../../Main/Constant/AddToCart.jsx";
 import { useWishlist } from "../../../Main/Constant/Wishlist.jsx";
 import { FaHeart } from "react-icons/fa";
 import { FiShoppingCart } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { getProducts } from "../../../api/api.js"; // ✅ Import backend API
+
 export default function Food() {
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
 
   const scrollRef = useRef();
   const [popupMessage, setPopupMessage] = useState("");
+  const [foodProducts, setFoodProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  /* ============================================================
+     ✅ Fetch Food & Medicine Products from Backend
+  ============================================================ */
+  useEffect(() => {
+    const fetchFoodProducts = async () => {
+      try {
+        const { data } = await getProducts();
+        if (data && Array.isArray(data)) {
+          // Filter only Food & Medicine category
+          const foodItems = data.filter(
+            (item) =>
+              item.category?.toLowerCase() === "food" ||
+              item.category?.toLowerCase() === "food & medicine"
+          );
+          setFoodProducts(foodItems);
+        }
+      } catch (err) {
+        console.error("❌ Error fetching Food & Medicine products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFoodProducts();
+  }, []);
+
+  /* ============================================================
+     ✅ Infinite Scroll Logic (Same as before)
+  ============================================================ */
   const scroll = (scrollOffset) => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollLeft += scrollOffset;
   };
-
-  function formatCount(count) {
-    if (count >= 1000) {
-      return (count / 1000).toFixed(1).replace(/\.0$/, "") + "k";
-    }
-    return count;
-  }
-
-  const infiniteFoodData = [...FoodData, ...FoodData, ...FoodData];
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
@@ -46,12 +68,40 @@ export default function Food() {
     scrollContainer.scrollLeft = scrollContainer.scrollWidth / 3;
 
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [foodProducts]);
 
+  /* ============================================================
+     ✅ Popup Function
+  ============================================================ */
   const showPopup = (msg) => {
     setPopupMessage(msg);
     setTimeout(() => setPopupMessage(""), 2000);
   };
+
+  if (loading) {
+    return (
+      <section className="w-full min-h-[40vh] flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-400">
+        <h3 className="text-white text-lg font-semibold animate-pulse">
+          Loading Food & Medicine...
+        </h3>
+      </section>
+    );
+  }
+
+  if (foodProducts.length === 0) {
+    return (
+      <section className="w-full min-h-[40vh] flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-400">
+        <h3 className="text-white text-lg font-semibold">
+          No Food & Medicine products found.
+        </h3>
+      </section>
+    );
+  }
+
+  /* ============================================================
+     ✅ Render UI
+  ============================================================ */
+  const infiniteFoodData = [...foodProducts, ...foodProducts, ...foodProducts];
 
   return (
     <section className="w-full min-h-auto bg-gradient-to-r from-blue-600 to-cyan-400 py-10 relative">
@@ -65,7 +115,7 @@ export default function Food() {
       {/* Header */}
       <div className="flex justify-between items-center px-6 md:px-20">
         <h3 className="text-white text-xl md:text-2xl font-semibold underline uppercase">
-          Best Selling For Food & Medicine:
+          Best Selling Food & Medicine:
         </h3>
       </div>
 
@@ -73,7 +123,7 @@ export default function Food() {
       <div className="relative w-full mt-6 overflow-visible">
         {/* Scroll Left */}
         <button
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 text-white text-2xl md:text-3xl rounded-full px-3 py-1 z-50 hover:bg-blue-600 transition"
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 text-white text-2xl md:text-3xl rounded-full px-3 py-1 z-40 hover:bg-blue-600 transition"
           onClick={() => scroll(-300)}
           aria-label="scroll left"
         >
@@ -87,29 +137,28 @@ export default function Food() {
         >
           {infiniteFoodData.map((item, index) => (
             <div
-              key={index}
+              key={`${item._id || item.id}-${index}`}
               className="relative group flex-none w-56 sm:w-64 md:w-72 h-auto rounded-xl bg-white shadow-md flex flex-col transition-transform transform-gpu hover:scale-105 hover:z-20"
             >
-              <Link to={`/product/${item.id}`}>
-              {/* Image */}
-              <div className="h-40 flex justify-center items-center p-4">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="max-h-full object-contain rounded-xl"
-                />
-              </div>
+              <Link to={`/product/${item._id}`}>
+                {/* Image */}
+                <div className="h-40 flex justify-center items-center p-4">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="max-h-full object-contain rounded-xl"
+                  />
+                </div>
 
-              {/* Content */}
-              <div className="flex flex-col flex-1">
-                {/* Price + Title */}
-                <p className="bg-blue-600 text-white font-bold text-sm md:text-base rounded-r-md px-3 py-1 w-fit">
-                  ₹ {item.price}
-                </p>
-                <h4 className="text-blue-600 font-bold text-lg mt-2 capitalize line-clamp-2 py-3 px-2">
-                  {item.title}
-                </h4>
-              </div>
+                {/* Content */}
+                <div className="flex flex-col flex-1">
+                  <p className="bg-blue-600 text-white font-bold text-sm md:text-base rounded-r-md px-3 py-1 w-fit">
+                    ₹ {item.price}
+                  </p>
+                  <h4 className="text-blue-600 font-bold text-lg mt-2 capitalize line-clamp-2 py-3 px-2">
+                    {item.name}
+                  </h4>
+                </div>
               </Link>
 
               {/* Action Buttons */}
@@ -118,6 +167,7 @@ export default function Food() {
                 <button
                   className="flex items-center gap-2 text-blue-600 font-semibold hover:text-red-600 transition"
                   onClick={() => {
+                    if (!item._id) return showPopup("⚠️ Product ID missing");
                     addToCart(item);
                     showPopup("✅ Added to Cart");
                   }}
@@ -130,6 +180,7 @@ export default function Food() {
                 <button
                   className="flex items-center gap-2 text-blue-500 hover:text-red-600 font-semibold transition"
                   onClick={() => {
+                    if (!item._id) return showPopup("⚠️ Product ID missing");
                     addToWishlist(item);
                     showPopup("❤️ Added to Wishlist");
                   }}
