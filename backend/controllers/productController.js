@@ -14,7 +14,7 @@ export const createProduct = async (req, res) => {
 // List all products
 export const listProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    const products = await Product.find().sort({ createdAt: 1 });
     res.json(products);
   } catch (err) {
     console.error("listProducts ERROR:", err);
