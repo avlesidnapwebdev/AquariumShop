@@ -4,7 +4,7 @@ import { useParams, Link } from "react-router-dom";
 // ✅ Components
 import Header from "../Main/Header.jsx";
 import Footer from "../Main/Footer.jsx";
-import ProductDetails from "../Components/Product/ProductDetails.jsx";
+import ProductDetailsPage from "../Components/Product/ProductDetails.jsx";
 import ProductFeatures from "../Components/Product/ProductFeatures.jsx";
 import ProductRelated from "../Components/Product/ProductRelated.jsx";
 import ProductSimilar from "../Components/Product/ProductSimilar.jsx";
@@ -98,13 +98,13 @@ export default function ProductPage({ isLoggedIn, username, onLogout }) {
         </div>
 
         {/* ✅ Product Details */}
-        <ProductDetails product={product} />
+        <ProductDetailsPage />
 
         {/* ✅ Features */}
         <ProductFeatures />
 
         {/* ✅ Related products slider (guard product._id) */}
-        {product._id && <ProductRelated productId={product._id} />}
+        {product._id && <ProductRelated currentProductId={product._id} />}
 
         <div className="py-5"></div>
 
