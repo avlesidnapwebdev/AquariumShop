@@ -1,10 +1,6 @@
+// src/context/WishlistContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
-import {
-  getWishlist as apiGetWishlist,
-  addToWishlist as apiAddToWishlist,
-  removeFromWishlist as apiRemoveFromWishlist,
-  clearWishlist as apiClearWishlist,
-} from "../../api/api.js"; // adjust path if needed
+import { getWishlist as apiGetWishlist, addToWishlist as apiAddToWishlist, removeFromWishlist as apiRemoveFromWishlist, clearWishlist as apiClearWishlist } from "../api/api.js";
 
 const WishlistContext = createContext();
 
@@ -12,79 +8,42 @@ export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load wishlist on mount
+  const fetchWishlist = async () => {
+    try {
+      setLoading(true);
+      const res = await apiGetWishlist();
+      setWishlistItems(res.data?.products || []);
+    } catch (err) {
+      console.error("❌ Failed to load wishlist:", err);
+      setWishlistItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        setLoading(true);
-        const res = await apiGetWishlist();
-        setWishlistItems(res.data?.products || []);
-      } catch (err) {
-        console.error("❌ Failed to load wishlist:", err);
-        setWishlistItems([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    fetchWishlist();
   }, []);
 
-  // ✅ Add product to wishlist
   const addToWishlist = async (product) => {
-    try {
-      const productId = product?._id || product?.id || product?.productId;
-      if (!productId) throw new Error("Invalid product");
-
-      await apiAddToWishlist(productId);
-
-      // Update local state
-      setWishlistItems((prev) => {
-        if (prev.some((p) => (p._id || p.id || p.productId) === productId)) return prev;
-        return [...prev, product];
-      });
-
-      console.log("✅ Added to wishlist:", product.name || product.title);
-    } catch (err) {
-      console.error("❌ Add to wishlist failed:", err);
-      throw err;
-    }
+    const productId = product?._id || product?.id;
+    if (!productId) throw new Error("Invalid product");
+    await apiAddToWishlist(productId);
+    setWishlistItems((prev) => (prev.some((p) => (p._id || p.id) === productId) ? prev : [...prev, product]));
   };
 
-  // Remove product
   const removeFromWishlist = async (productId) => {
-    try {
-      if (!productId) throw new Error("productId is required");
-      await apiRemoveFromWishlist(productId);
-      setWishlistItems((prev) =>
-        prev.filter((p) => (p._id || p.id || p.productId) !== productId)
-      );
-    } catch (err) {
-      console.error("❌ Remove from wishlist failed:", err);
-      throw err;
-    }
+    await apiRemoveFromWishlist(productId);
+    setWishlistItems((prev) => prev.filter((p) => (p._id || p.id) !== productId));
   };
 
-  // Clear entire wishlist
-  const clearWishlist = async () => {
-    try {
-      await apiClearWishlist();
-      setWishlistItems([]);
-    } catch (err) {
-      console.error("❌ Clear wishlist failed:", err);
-      throw err;
-    }
+  const clearWishlistItems = async () => {
+    await apiClearWishlist();
+    setWishlistItems([]);
   };
 
   return (
-    <WishlistContext.Provider
-      value={{
-        wishlistItems,
-        loading,
-        addToWishlist,
-        removeFromWishlist,
-        clearWishlist,
-      }}
-    >
+    <WishlistContext.Provider value={{ wishlistItems, loading, addToWishlist, removeFromWishlist, clearWishlist: clearWishlistItems, refreshWishlist: fetchWishlist }}>
       {children}
     </WishlistContext.Provider>
   );
