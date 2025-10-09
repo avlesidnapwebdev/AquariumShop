@@ -1,3 +1,4 @@
+// src/Pages/CheckOut.jsx
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../Main/Header.jsx";
@@ -77,11 +78,7 @@ export default function CheckOut() {
       const options = {
         key,
         amount: rOrder.amount,
-<<<<<<< HEAD
-        currency: "INR",
-=======
-        currency: rOrder.currency,
->>>>>>> dcbb200471f9bd17860fb2583d34cf4feb40f70e
+        currency: rOrder.currency || "INR",
         name: "AquaShop",
         description: "Product Purchase",
         order_id: rOrder.id,
@@ -94,11 +91,9 @@ export default function CheckOut() {
               ourOrderId,
             });
 
-            // Add order to context (from backend)
-            addOrder(verifyRes.order);
+            // Add verified order to context
+            if (verifyRes?.order) addOrder(verifyRes.order);
 
-
->>>>>>> dcbb200471f9bd17860fb2583d34cf4feb40f70e
             clearCart();
             setOrderPlaced(true);
           } catch (err) {
@@ -118,11 +113,7 @@ export default function CheckOut() {
       rzp.open();
     } catch (err) {
       console.error("Payment initialization failed:", err);
-<<<<<<< HEAD
       alert(err.response?.data?.message || "Failed to initialize payment");
-=======
-      alert(err.message || "Failed to initialize payment");
->>>>>>> dcbb200471f9bd17860fb2583d34cf4feb40f70e
     } finally {
       setLoading(false);
     }
@@ -158,8 +149,8 @@ export default function CheckOut() {
                 <p className="font-semibold">{selectedAddress.name}</p>
                 <p>
                   {selectedAddress.addressLine1}, {selectedAddress.addressLine2},{" "}
-                  {selectedAddress.city}, {selectedAddress.state}, {selectedAddress.country} -{" "}
-                  {selectedAddress.pincode}
+                  {selectedAddress.city}, {selectedAddress.state},{" "}
+                  {selectedAddress.country} - {selectedAddress.pincode}
                 </p>
                 <p>Phone: {selectedAddress.phone}</p>
               </div>

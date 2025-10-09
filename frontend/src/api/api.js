@@ -56,7 +56,6 @@ export const loginAPI = (data) => API.post("/auth/login", data);
 
 /* ============================================================
    ✅ PRODUCT ENDPOINTS
-   - Returns full URLs for images
 ============================================================ */
 export const getProducts = async () => {
   const res = await API.get("/products");
@@ -73,7 +72,7 @@ export const getProductById = async (id) => {
   const p = res.data;
   return {
     ...p,
-    image: p.image?.startsWith("http") 
+    image: p.image?.startsWith("http")
       ? p.image
       : `${BASE.replace("/api", "")}${p.image}`,
   };
@@ -87,17 +86,14 @@ export const deleteProduct = (id) => API.delete(`/products/${id}`);
    ✅ CART ENDPOINTS
 ============================================================ */
 export const getCart = () => API.get("/cart");
-
 export const addToCart = ({ productId, quantity = 1 }) => {
   if (!productId) throw new Error("productId is required");
   return API.post("/cart/add", { productId, quantity });
 };
-
 export const updateCartItem = (productId, { quantity }) => {
   if (!productId) throw new Error("productId is required");
   return API.put(`/cart/item/${productId}`, { quantity });
 };
-
 export const clearCart = () => API.delete("/cart/clear");
 
 /* ============================================================
@@ -143,17 +139,16 @@ export const deleteUser = () => API.delete("/users");
    ✅ WISHLIST ENDPOINTS
 ============================================================ */
 export const getWishlist = () => API.get("/wishlist");
-
 export const addToWishlist = (productId) => {
   if (!productId) throw new Error("productId is required");
   return API.post("/wishlist/add", { productId });
 };
-
 export const removeFromWishlist = (productId) => {
   if (!productId) throw new Error("productId is required");
   return API.delete(`/wishlist/remove/${productId}`);
 };
-export const clearWishlist = () => API.delete("/wishlist/clear"); // NEW
+export const clearWishlist = () => API.delete("/wishlist/clear");
+
 /* ============================================================
    ✅ DEFAULT EXPORT
 ============================================================ */
