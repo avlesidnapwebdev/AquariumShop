@@ -1,29 +1,33 @@
 import axios from "axios";
 
 /* ============================================================
-   ✅ BASE URL CONFIGURATION
+   ✅ BASE URL CONFIGURATION — PRODUCTION ONLY (Render Backend)
 ============================================================ */
-// Detect backend URL depending on environment
-const envUrl = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL;
 
-// Use Render backend in production, localhost in dev
-const DEFAULT_PROD_URL = "https://your-backend.onrender.com"; // <-- replace with your Render backend URL
-const DEFAULT_DEV_URL = "http://localhost:5000";
+// 🔹 Always use environment variable first
+const envUrl = import.meta.env.VITE_API_URL;
 
+// 🔹 Fallback if env variable missing
+const DEFAULT_PROD_URL = "https://aquariumshop.onrender.com";
+
+// 🔹 Helper: Normalize API path
 const normalizeBase = (url) => {
+  if (!url) return "";
   const trimmed = url.replace(/\/+$/, ""); // remove trailing slashes
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
 
-// Choose backend depending on environment
-const BASE = normalizeBase(envUrl || (import.meta.env.PROD ? DEFAULT_PROD_URL : DEFAULT_DEV_URL));
+// 🔹 Final base URL (Render only)
+const BASE = normalizeBase(envUrl || DEFAULT_PROD_URL);
+
+console.log("🧩 Using API Base URL:", BASE);
 
 /* ============================================================
    ✅ AXIOS INSTANCE
 ============================================================ */
 const API = axios.create({
   baseURL: BASE,
-  timeout: 10000,
+  timeout: 15000, // increased timeout for production stability
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -43,7 +47,7 @@ API.interceptors.request.use(
 );
 
 /* ============================================================
-   ✅ RESPONSE INTERCEPTOR (Handle 401)
+   ✅ RESPONSE INTERCEPTOR (Prevent Infinite Reload)
 ============================================================ */
 API.interceptors.response.use(
   (response) => response,
@@ -51,18 +55,19 @@ API.interceptors.response.use(
     const status = error?.response?.status;
     const isNetworkError = !error.response;
 
+    // 🚫 Avoid reload loops on Netlify
     if (status === 401) {
       localStorage.removeItem("token");
-      if (typeof window !== "undefined") window.location.href = "/login";
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.replace("/login");
+      }
     } else if (isNetworkError) {
-      console.error("Network or CORS error:", error.message);
-      // Do NOT redirect to /login here
+      console.error("🚨 Network or CORS error:", error.message);
     }
 
     return Promise.reject(error);
   }
 );
-
 
 /* ============================================================
    ✅ AUTH ENDPOINTS
