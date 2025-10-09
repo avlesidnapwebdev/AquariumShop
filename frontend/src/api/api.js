@@ -73,8 +73,11 @@ API.interceptors.response.use(
 export const registerAPI = async (data) => {
   if (!data.email || !data.password)
     throw new Error("Email and password required");
+
   const res = await API.post("/auth/register", data);
+
   if (res.data?.token) localStorage.setItem("token", res.data.token);
+
   return res.data;
 };
 
@@ -83,7 +86,9 @@ export const loginAPI = async (data) => {
   if (!data.password) throw new Error("Password required");
 
   const res = await API.post("/auth/login", data);
+
   if (res.data?.token) localStorage.setItem("token", res.data.token);
+
   return res.data;
 };
 
@@ -94,6 +99,7 @@ export const getProducts = async () => {
   const res = await API.get("/products", {
     headers: { "Cache-Control": "no-cache" },
   });
+
   return res.data.map((p) => ({
     ...p,
     image: p.image?.startsWith("http")
@@ -105,6 +111,7 @@ export const getProducts = async () => {
 export const getProductById = async (id) => {
   const res = await API.get(`/products/${id}`);
   const p = res.data;
+
   return {
     ...p,
     image: p.image?.startsWith("http")

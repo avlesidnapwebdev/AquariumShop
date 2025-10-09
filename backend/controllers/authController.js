@@ -2,16 +2,15 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 
 /* ===========================
-   🔐 Helper: Generate JWT Token
+   🔐 Helper: Generate JWT Token (never expires)
 =========================== */
 const generateToken = (id) => {
   if (!process.env.JWT_SECRET) {
     console.error("❌ Missing JWT_SECRET in environment variables!");
   }
 
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "30d",
-  });
+  // No expiresIn → token never expires
+  return jwt.sign({ id }, process.env.JWT_SECRET);
 };
 
 /* ===========================
@@ -84,7 +83,7 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Generate new token
+    // Generate new token (never expires)
     const token = generateToken(user._id);
 
     return res.json({

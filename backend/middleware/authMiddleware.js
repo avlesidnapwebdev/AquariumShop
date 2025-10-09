@@ -45,12 +45,8 @@ export const protect = async (req, res, next) => {
   } catch (err) {
     console.error("❌ Token verification failed:", err.message);
 
-    if (err.name === "TokenExpiredError") {
-      return res
-        .status(401)
-        .json({ message: "Token expired, please log in again" });
-    } else if (err.name === "JsonWebTokenError") {
-      return res.status(401).json({ message: "Invalid token signature" });
+    if (err.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Invalid token" });
     }
 
     return res.status(401).json({ message: "Not authorized, token failed" });

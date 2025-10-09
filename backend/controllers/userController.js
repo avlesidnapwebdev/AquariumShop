@@ -7,23 +7,23 @@ import path from "path";
 
 /* ===========================
    🧹 Helper to safely remove a file
-   =========================== */
+=========================== */
 const removeFile = async (filePath) => {
   try {
     await fs.unlink(filePath);
   } catch {
-    // ignore if not found
+    // ignore if file not found
   }
 };
 
 /* ===========================
    ✅ Get Profile (with masked card numbers)
-   =========================== */
+=========================== */
 export const getProfile = async (req, res) => {
   try {
     const { password, ...userData } = req.user.toObject();
 
-    // Mask card numbers before sending
+    // Mask card numbers
     if (userData.cards) {
       userData.cards = userData.cards.map((c) => ({
         ...c,
@@ -40,7 +40,7 @@ export const getProfile = async (req, res) => {
 
 /* ===========================
    ✅ Update Profile
-   =========================== */
+=========================== */
 export const updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -70,7 +70,7 @@ export const updateProfile = async (req, res) => {
 
 /* ===========================
    ✅ Add Address
-   =========================== */
+=========================== */
 export const addAddress = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -85,14 +85,12 @@ export const addAddress = async (req, res) => {
 
 /* ===========================
    ✅ Update Address
-   =========================== */
+=========================== */
 export const updateAddress = async (req, res) => {
   try {
     const { addressId } = req.params;
     const user = await User.findById(req.user._id);
-    const idx = user.addresses.findIndex(
-      (a) => a._id.toString() === addressId
-    );
+    const idx = user.addresses.findIndex((a) => a._id.toString() === addressId);
     if (idx === -1)
       return res.status(404).json({ message: "Address not found" });
 
@@ -107,7 +105,7 @@ export const updateAddress = async (req, res) => {
 
 /* ===========================
    ✅ Set Default Address
-   =========================== */
+=========================== */
 export const setDefaultAddress = async (req, res) => {
   try {
     const { addressId } = req.params;
@@ -120,7 +118,7 @@ export const setDefaultAddress = async (req, res) => {
     // Reset all addresses to non-default
     user.addresses.forEach((a) => (a.isDefault = false));
 
-    // Set selected one as default
+    // Set selected as default
     address.isDefault = true;
 
     await user.save();
@@ -131,17 +129,14 @@ export const setDefaultAddress = async (req, res) => {
   }
 };
 
-
 /* ===========================
    ✅ Remove Address
-   =========================== */
+=========================== */
 export const removeAddress = async (req, res) => {
   try {
     const { addressId } = req.params;
     const user = await User.findById(req.user._id);
-    user.addresses = user.addresses.filter(
-      (a) => a._id.toString() !== addressId
-    );
+    user.addresses = user.addresses.filter((a) => a._id.toString() !== addressId);
     await user.save();
     res.json({ message: "Address removed", addresses: user.addresses });
   } catch (err) {
@@ -151,21 +146,11 @@ export const removeAddress = async (req, res) => {
 };
 
 /* ===========================
-   ✅ Add Card (masked storage only)
-   =========================== */
+   ✅ Add Card
+=========================== */
 export const addCard = async (req, res) => {
   try {
-    const {
-      providerToken,
-      brand,
-      cardNumber,
-      expiryMonth,
-      expiryYear,
-      isDefault,
-      cardType,
-      name,
-      cvv,
-    } = req.body;
+    const { providerToken, brand, cardNumber, expiryMonth, expiryYear, isDefault, cardType, name, cvv } = req.body;
 
     if (!cardNumber || cardNumber.length !== 16) {
       return res.status(400).json({ message: "Invalid card number" });
@@ -174,17 +159,15 @@ export const addCard = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Make sure existing cards are preserved
     if (isDefault) user.cards.forEach((c) => (c.isDefault = false));
 
-    // Store only last 4 + masked number (no real 16-digit)
     const maskedNumber = "************" + cardNumber.slice(-4);
     const maskedCVV = cvv ? cvv.replace(/\d/g, "*") : "***";
 
     const newCard = {
       providerToken,
       brand,
-      cardNumber: maskedNumber, // masked
+      cardNumber: maskedNumber,
       last4: cardNumber.slice(-4),
       expiryMonth,
       expiryYear,
@@ -211,7 +194,7 @@ export const addCard = async (req, res) => {
 
 /* ===========================
    ✅ Set Default Card
-   =========================== */
+=========================== */
 export const setDefaultCard = async (req, res) => {
   try {
     const { cardId } = req.params;
@@ -240,7 +223,7 @@ export const setDefaultCard = async (req, res) => {
 
 /* ===========================
    ✅ Remove Card
-   =========================== */
+=========================== */
 export const removeCard = async (req, res) => {
   try {
     const { cardId } = req.params;
@@ -262,7 +245,7 @@ export const removeCard = async (req, res) => {
 
 /* ===========================
    ✅ Delete User (cascade)
-   =========================== */
+=========================== */
 export const deleteUser = async (req, res) => {
   try {
     const userId = req.user._id;
