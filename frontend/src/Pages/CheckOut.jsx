@@ -66,7 +66,6 @@ export default function CheckOut() {
     setLoading(true);
 
     try {
-      // ✅ Step 1: Create Razorpay order from backend
       const { data } = await createRazorpayOrder({
         amount: subtotal,
         address: selectedAddress,
@@ -75,9 +74,8 @@ export default function CheckOut() {
 
       const { key, rOrder, ourOrderId } = data;
 
-      // ✅ Step 2: Configure Razorpay Checkout
       const options = {
-        key, // Razorpay key
+        key,
         amount: rOrder.amount,
         currency: rOrder.currency,
         name: "AquaShop",
@@ -85,29 +83,16 @@ export default function CheckOut() {
         order_id: rOrder.id,
         handler: async function (response) {
           try {
-            // ✅ Step 3: Verify payment with backend
-            await verifyRazorpayPayment({
+            const verifyRes = await verifyRazorpayPayment({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               ourOrderId,
             });
 
-            // ✅ Add order locally
-            const newOrders = items.map((item) => ({
-              id: Date.now() + "-" + (item.id || item._id),
-              title: item.name || item.title,
-              image: item.image,
-              qty: item.qty,
-              price: item.price,
-              deliveryDate: new Date(
-                Date.now() + 5 * 24 * 60 * 60 * 1000
-              ).toLocaleDateString(),
-              rating: 0,
-            }));
-            newOrders.forEach((order) => addOrder(order));
+            // Add order to context (from backend)
+            addOrder(verifyRes.order);
 
-            // ✅ Clear cart and mark order placed
             clearCart();
             setOrderPlaced(true);
           } catch (err) {
@@ -123,7 +108,6 @@ export default function CheckOut() {
         theme: { color: "#0ea5e9" },
       };
 
-      // ✅ Step 4: Open Razorpay popup
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
@@ -153,7 +137,6 @@ export default function CheckOut() {
           <div className="md:col-span-2 bg-white p-8 rounded-2xl shadow space-y-6">
             <h2 className="text-2xl font-semibold">Billing & Shipping</h2>
 
-            {/* Address Selection */}
             <button
               onClick={() => setAddressSidebar(true)}
               className="w-full bg-blue-600 text-white py-2 rounded-lg"
@@ -172,7 +155,6 @@ export default function CheckOut() {
               </div>
             )}
 
-            {/* Card Selection */}
             <button
               onClick={() => setCardSidebar(true)}
               className="w-full bg-orange-500 text-white py-2 rounded-lg mt-4"

@@ -56,7 +56,6 @@ export const loginAPI = (data) => API.post("/auth/login", data);
 
 /* ============================================================
    ✅ PRODUCT ENDPOINTS
-   - Returns full URLs for images
 ============================================================ */
 export const getProducts = async () => {
   const res = await API.get("/products");
@@ -104,13 +103,19 @@ export const clearCart = () => API.delete("/cart/clear");
    ✅ ORDER ENDPOINTS
 ============================================================ */
 export const placeOrder = (data) => API.post("/orders", data);
-export const getMyOrders = () => API.get("/orders");
+
+// ✅ FIXED: always return .data (array of user orders)
+export const getMyOrders = async () => {
+  const res = await API.get("/orders");
+  return res.data;
+};
+
 export const getOrderById = (id) => API.get(`/orders/${id}`);
 export const updateOrderStatus = (id, status) =>
   API.put(`/orders/${id}/status`, { status });
 
 /* ============================================================
-   ✅ PAYMENT (Razorpay) ENDPOINTS
+   ✅ PAYMENT (Razorpay)
 ============================================================ */
 export const createRazorpayOrder = (data) =>
   API.post("/payments/razorpay/create", data);
@@ -153,8 +158,7 @@ export const removeFromWishlist = (productId) => {
   if (!productId) throw new Error("productId is required");
   return API.delete(`/wishlist/remove/${productId}`);
 };
-export const clearWishlist = () => API.delete("/wishlist/clear"); // NEW
-/* ============================================================
-   ✅ DEFAULT EXPORT
-============================================================ */
+
+export const clearWishlist = () => API.delete("/wishlist/clear");
+
 export default API;
