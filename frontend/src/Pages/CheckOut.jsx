@@ -67,17 +67,19 @@ export default function CheckOut() {
 
     try {
       const { data } = await createRazorpayOrder({
-        amount: subtotal,
+        amount: Number(subtotal), // ensure numeric
         address: selectedAddress,
         items,
       });
 
       const { key, rOrder, ourOrderId } = data;
 
+      if (!rOrder || !rOrder.id) throw new Error("Failed to initialize payment");
+
       const options = {
         key,
         amount: rOrder.amount,
-        currency: rOrder.currency,
+        currency: "INR",
         name: "AquaShop",
         description: "Product Purchase",
         order_id: rOrder.id,
@@ -90,9 +92,7 @@ export default function CheckOut() {
               ourOrderId,
             });
 
-            // Add order to context (from backend)
-            addOrder(verifyRes.order);
-
+            addOrder(verifyRes.data.order);
             clearCart();
             setOrderPlaced(true);
           } catch (err) {
@@ -112,7 +112,7 @@ export default function CheckOut() {
       rzp.open();
     } catch (err) {
       console.error("Payment initialization failed:", err);
-      alert(err.message || "Failed to initialize payment");
+      alert(err.response?.data?.message || "Failed to initialize payment");
     } finally {
       setLoading(false);
     }

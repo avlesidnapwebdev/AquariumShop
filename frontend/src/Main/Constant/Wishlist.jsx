@@ -1,4 +1,3 @@
-// src/context/WishlistContext.jsx  (adjust path to your project)
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   getWishlist as apiGetWishlist,
@@ -13,13 +12,12 @@ export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load wishlist on mount (or when user logs in you may re-run)
+  // Load wishlist on mount
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         const res = await apiGetWishlist();
-        // res.data is wishlist object -> use res.data.products (populated)
         setWishlistItems(res.data?.products || []);
       } catch (err) {
         console.error("❌ Failed to load wishlist:", err);
@@ -31,35 +29,42 @@ export const WishlistProvider = ({ children }) => {
     load();
   }, []);
 
-  // Add product (DB + update state)
+  // ✅ Add product to wishlist
   const addToWishlist = async (product) => {
     try {
-      if (!product?._id) throw new Error("Invalid product");
-      await apiAddToWishlist(product._id);
-      // Push product to local state (keep fields consistent)
+      const productId = product?._id || product?.id || product?.productId;
+      if (!productId) throw new Error("Invalid product");
+
+      await apiAddToWishlist(productId);
+
+      // Update local state
       setWishlistItems((prev) => {
-        if (prev.some((p) => (p._id || p.id || p.productId) === product._id)) return prev;
+        if (prev.some((p) => (p._id || p.id || p.productId) === productId)) return prev;
         return [...prev, product];
       });
+
+      console.log("✅ Added to wishlist:", product.name || product.title);
     } catch (err) {
       console.error("❌ Add to wishlist failed:", err);
       throw err;
     }
   };
 
-  // Remove product (DB + update state)
+  // Remove product
   const removeFromWishlist = async (productId) => {
     try {
       if (!productId) throw new Error("productId is required");
       await apiRemoveFromWishlist(productId);
-      setWishlistItems((prev) => prev.filter((p) => (p._id || p.id || p.productId) !== productId));
+      setWishlistItems((prev) =>
+        prev.filter((p) => (p._id || p.id || p.productId) !== productId)
+      );
     } catch (err) {
       console.error("❌ Remove from wishlist failed:", err);
       throw err;
     }
   };
 
-  // Clear entire wishlist (DB + local state)
+  // Clear entire wishlist
   const clearWishlist = async () => {
     try {
       await apiClearWishlist();
