@@ -3,20 +3,20 @@ import axios from "axios";
 /* ============================================================
    ✅ BASE URL CONFIGURATION
 ============================================================ */
-// Use VITE_API_URL / REACT_APP_API_URL for environment
-// Fallback to Render backend URL in production
+// Detect backend URL depending on environment
 const envUrl = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL;
 
-// Replace with your Render backend URL
-const DEFAULT_PROD_URL = "https://your-backend.onrender.com";
+// Use Render backend in production, localhost in dev
+const DEFAULT_PROD_URL = "https://your-backend.onrender.com"; // <-- replace with your Render backend URL
+const DEFAULT_DEV_URL = "http://localhost:5000";
 
 const normalizeBase = (url) => {
-  if (!url) url = DEFAULT_PROD_URL;
   const trimmed = url.replace(/\/+$/, ""); // remove trailing slashes
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
 
-const BASE = normalizeBase(envUrl);
+// Choose backend depending on environment
+const BASE = normalizeBase(envUrl || (import.meta.env.PROD ? DEFAULT_PROD_URL : DEFAULT_DEV_URL));
 
 /* ============================================================
    ✅ AXIOS INSTANCE
