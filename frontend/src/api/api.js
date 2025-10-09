@@ -3,10 +3,15 @@ import axios from "axios";
 /* ============================================================
    ✅ BASE URL CONFIGURATION
 ============================================================ */
+// Use VITE_API_URL / REACT_APP_API_URL for environment
+// Fallback to Render backend URL in production
 const envUrl = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL;
 
+// Replace with your Render backend URL
+const DEFAULT_PROD_URL = "https://your-backend.onrender.com";
+
 const normalizeBase = (url) => {
-  if (!url) return "http://localhost:5000/api";
+  if (!url) url = DEFAULT_PROD_URL;
   const trimmed = url.replace(/\/+$/, ""); // remove trailing slashes
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
@@ -20,7 +25,7 @@ const API = axios.create({
   baseURL: BASE,
   timeout: 10000,
   headers: {
-    "Content-Type": "application/json", // ensure JSON content type
+    "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
@@ -44,7 +49,6 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401) {
-      console.warn("Unauthorized — clearing token and redirecting to /login");
       localStorage.removeItem("token");
       if (typeof window !== "undefined") window.location.href = "/login";
     }
@@ -102,8 +106,7 @@ export const clearCart = () => API.delete("/cart/clear");
 export const placeOrder = (data) => API.post("/orders", data);
 export const getMyOrders = () => API.get("/orders");
 export const getOrderById = (id) => API.get(`/orders/${id}`);
-export const updateOrderStatus = (id, status) =>
-  API.put(`/orders/${id}/status`, { status });
+export const updateOrderStatus = (id, status) => API.put(`/orders/${id}/status`, { status });
 
 /* ============================================================
    ✅ PAYMENT (Razorpay) ENDPOINTS
@@ -115,11 +118,8 @@ export const verifyRazorpayPayment = (data) => API.post("/payments/razorpay/veri
    ✅ USER ENDPOINTS
 ============================================================ */
 export const getProfileAPI = () => API.get("/users/profile");
-
 export const updateProfileAPI = (formData) =>
-  API.put("/users/profile", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  API.put("/users/profile", formData, { headers: { "Content-Type": "multipart/form-data" } });
 
 export const addAddress = (data) => API.post("/users/addresses", data);
 export const updateAddress = (id, data) => API.put(`/users/addresses/${id}`, data);
