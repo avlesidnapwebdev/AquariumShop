@@ -1,4 +1,3 @@
-// src/components/AddToCartSidebar.jsx
 import React from "react";
 import { IoClose } from "react-icons/io5";
 import { FaTrash, FaHeart } from "react-icons/fa";
@@ -15,6 +14,15 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
     (acc, item) => acc + Number(item.price || 0) * Number(item.qty || 1),
     0
   );
+
+  const handleAddToWishlist = async (item) => {
+    try {
+      await addToWishlist(item);
+    } catch (err) {
+      console.error("Wishlist add failed:", err);
+      alert("Failed to add to wishlist.");
+    }
+  };
 
   const handlePurchase = () => {
     toggleCart();
@@ -43,39 +51,29 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
           <p className="text-red-600">Your cart is empty</p>
         ) : (
           cartItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-3 border-b py-3"
-            >
+            <div key={item.id || item._id} className="flex items-center gap-3 border-b py-3">
               <img
                 src={item.image}
                 alt={item.name}
                 className="w-14 h-14 rounded-lg object-cover"
               />
-
               <div className="flex-1">
-                <p className="font-semibold text-blue-500 line-clamp-1">
-                  {item.name}
-                </p>
-                <p className="text-sm font-bold text-red-500">
-                  ₹ {item.price} × {item.qty}
-                </p>
+                <p className="font-semibold text-blue-500 line-clamp-1">{item.name}</p>
+                <p className="text-sm font-bold text-red-500">₹ {item.price} × {item.qty}</p>
                 <p className="text-sm text-gray-600">
                   Subtotal: ₹ {Number(item.price) * Number(item.qty)}
                 </p>
 
-                {/* Add to Wishlist */}
                 <button
-                  onClick={() => addToWishlist(item)}
+                  onClick={() => handleAddToWishlist(item)}
                   className="flex items-center gap-1 text-sm mt-2 text-pink-600 hover:text-pink-800"
                 >
                   <FaHeart /> Add to Wishlist
                 </button>
               </div>
 
-              {/* Remove from Cart */}
               <button
-                onClick={() => removeFromCart(item.id)}
+                onClick={() => removeFromCart(item.id || item._id)}
                 className="text-red-600 hover:text-red-800 ml-2"
               >
                 <FaTrash />
@@ -90,9 +88,7 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
         <div className="p-4 border-t bg-white">
           <div className="flex justify-between items-center mb-3">
             <span className="font-bold text-blue-600">Total:</span>
-            <span className="font-bold text-red-600 text-lg">
-              ₹ {totalPrice}
-            </span>
+            <span className="font-bold text-red-600 text-lg">₹ {totalPrice}</span>
           </div>
 
           <button

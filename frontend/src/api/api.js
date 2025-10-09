@@ -73,7 +73,7 @@ export const getProductById = async (id) => {
   const p = res.data;
   return {
     ...p,
-    image: p.image?.startsWith("http")
+    image: p.image?.startsWith("http") 
       ? p.image
       : `${BASE.replace("/api", "")}${p.image}`,
   };

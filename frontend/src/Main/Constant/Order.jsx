@@ -1,10 +1,11 @@
 // src/Main/Constant/Order.jsx
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getMyOrders } from "../../api/api.js";
 
 const OrderContext = createContext();
 
-export function OrderProvider({ children }) {
+export const OrderProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -12,8 +13,8 @@ export function OrderProvider({ children }) {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const backendOrders = await getMyOrders();
-      setOrders(backendOrders || []);
+      const res = await getMyOrders();
+      setOrders(res.data || []);
     } catch (err) {
       console.error("Failed to fetch orders:", err);
     } finally {
@@ -21,24 +22,26 @@ export function OrderProvider({ children }) {
     }
   };
 
+  // Add new order locally (after payment)
+  const addOrder = (order) => {
+    setOrders((prev) => [order, ...prev]);
+  };
+
+  // Clear all orders (e.g., on logout)
+  const clearOrders = () => setOrders([]);
+
+  // Auto-fetch on mount
   useEffect(() => {
     fetchOrders();
   }, []);
 
-  // Add order locally (after payment success)
-  const addOrder = (order) => {
-    setOrders((prev) => [...prev, order]);
-  };
-
-  const clearOrders = () => setOrders([]);
-
   return (
-    <OrderContext.Provider value={{ orders, addOrder, clearOrders, fetchOrders, loading }}>
+    <OrderContext.Provider
+      value={{ orders, addOrder, clearOrders, fetchOrders, loading }}
+    >
       {children}
     </OrderContext.Provider>
   );
-}
+};
 
-export function useOrders() {
-  return useContext(OrderContext);
-}
+export const useOrders = () => useContext(OrderContext);

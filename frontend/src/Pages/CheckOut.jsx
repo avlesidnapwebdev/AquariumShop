@@ -67,12 +67,19 @@ export default function CheckOut() {
 
     try {
       const { data } = await createRazorpayOrder({
+        amount: Number(subtotal), // ensure numeric
+
         amount: subtotal,
+
         address: selectedAddress,
         items,
       });
 
       const { key, rOrder, ourOrderId } = data;
+
+      if (!rOrder || !rOrder.id) throw new Error("Failed to initialize payment");
+
+
 
       const options = {
         key,
@@ -90,8 +97,12 @@ export default function CheckOut() {
               ourOrderId,
             });
 
+
+            addOrder(verifyRes.data.order);
+
             // Add order to context (from backend)
             addOrder(verifyRes.order);
+
 
             clearCart();
             setOrderPlaced(true);
