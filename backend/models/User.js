@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 
 /* ===========================
    ✅ Address Schema
-   =========================== */
+=========================== */
 const AddressSchema = new mongoose.Schema({
   label: String,
   name: String,
@@ -14,16 +14,16 @@ const AddressSchema = new mongoose.Schema({
   state: String,
   pincode: String,
   country: { type: String, default: "India" },
-  isDefault: { type: Boolean, default: false }, // ✅ NEW FIELD
+  isDefault: { type: Boolean, default: false },
 });
 
 /* ===========================
-   ✅ Card Schema (Store masked number only)
-   =========================== */
+   ✅ Card Schema
+=========================== */
 const CardSchema = new mongoose.Schema({
   providerToken: { type: String, required: true },
-  brand: { type: String, required: true }, // e.g., Visa, Mastercard
-  cardNumber: { type: String, required: true }, // masked number (only last 4 stored)
+  brand: { type: String, required: true },
+  cardNumber: { type: String, required: true },
   last4: { type: String, required: true },
   expiryMonth: { type: Number, required: true },
   expiryYear: { type: Number, required: true },
@@ -32,7 +32,7 @@ const CardSchema = new mongoose.Schema({
     enum: ["Credit", "Debit", "Prepaid", "UPI", "Other"],
     default: "Credit",
   },
-  cvv: { type: String, required: true }, // masked CVV
+  cvv: { type: String, required: true },
   isDefault: { type: Boolean, default: false },
   name: { type: String, required: true, default: "Card Holder" },
   createdAt: { type: Date, default: Date.now },
@@ -40,7 +40,7 @@ const CardSchema = new mongoose.Schema({
 
 /* ===========================
    ✅ User Schema
-   =========================== */
+=========================== */
 const UserSchema = new mongoose.Schema(
   {
     fullName: { type: String, required: true },
@@ -56,7 +56,7 @@ const UserSchema = new mongoose.Schema(
 
 /* ===========================
    ✅ Password Hash Middleware
-   =========================== */
+=========================== */
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
@@ -66,7 +66,7 @@ UserSchema.pre("save", async function (next) {
 
 /* ===========================
    ✅ Compare Password Method
-   =========================== */
+=========================== */
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };

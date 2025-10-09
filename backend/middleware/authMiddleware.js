@@ -45,7 +45,6 @@ export const protect = async (req, res, next) => {
   } catch (err) {
     console.error("❌ Token verification failed:", err.message);
 
-    // Return specific error for easier debugging
     if (err.name === "TokenExpiredError") {
       return res
         .status(401)
