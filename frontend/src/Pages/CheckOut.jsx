@@ -32,14 +32,12 @@ export default function CheckOut() {
   const [cards, setCards] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
-
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
-
   const [addressSidebar, setAddressSidebar] = useState(false);
   const [cardSidebar, setCardSidebar] = useState(false);
 
-  // Scroll to top when page loads
+  // Scroll to top
   useEffect(() => window.scrollTo({ top: 0, behavior: "smooth" }), []);
 
   // Fetch user profile (addresses + cards)
@@ -63,7 +61,6 @@ export default function CheckOut() {
   const handlePay = async () => {
     if (!selectedAddress) return alert("Please select a shipping address!");
     if (items.length === 0) return alert("Your cart is empty!");
-
     setLoading(true);
 
     try {
@@ -91,9 +88,7 @@ export default function CheckOut() {
               ourOrderId,
             });
 
-            // Add verified order to context
             if (verifyRes?.order) addOrder(verifyRes.order);
-
             clearCart();
             setOrderPlaced(true);
           } catch (err) {
@@ -106,7 +101,9 @@ export default function CheckOut() {
           email: selectedAddress.email || "",
           contact: selectedAddress.phone || "",
         },
-        theme: { color: "#0ea5e9" },
+        theme: {
+          color: "#0ea5e9",
+        },
       };
 
       const rzp = new window.Razorpay(options);
@@ -134,7 +131,7 @@ export default function CheckOut() {
 
       <div className="min-h-screen bg-gray-50 text-gray-800 flex justify-center p-6">
         <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Billing & Address */}
+          {/* Billing & Address Section */}
           <div className="md:col-span-2 bg-white p-8 rounded-2xl shadow space-y-6">
             <h2 className="text-2xl font-semibold">Billing & Shipping</h2>
 
@@ -144,6 +141,7 @@ export default function CheckOut() {
             >
               Select Shipping Address
             </button>
+
             {selectedAddress && (
               <div className="p-4 border rounded-lg mt-2 bg-gray-50">
                 <p className="font-semibold">{selectedAddress.name}</p>
@@ -162,6 +160,7 @@ export default function CheckOut() {
             >
               Select Payment Card (Optional)
             </button>
+
             {selectedCard && (
               <div className="p-4 border rounded-lg mt-2 bg-gray-50">
                 <p className="font-semibold">{selectedCard.brand}</p>
@@ -173,6 +172,7 @@ export default function CheckOut() {
           {/* Order Summary */}
           <div className="bg-white p-6 rounded-2xl shadow">
             <h2 className="text-2xl font-semibold mb-4">Your Order</h2>
+
             <div className="divide-y">
               {items.map((item) => (
                 <div key={item._id || item.id} className="flex justify-between py-2">
@@ -182,6 +182,7 @@ export default function CheckOut() {
                   <span>₹{(item.price * item.qty).toFixed(2)}</span>
                 </div>
               ))}
+
               <div className="flex justify-between font-medium py-2">
                 <span>Subtotal</span>
                 <span>₹{subtotal.toFixed(2)}</span>
@@ -191,6 +192,7 @@ export default function CheckOut() {
                 <span>₹{subtotal.toFixed(2)}</span>
               </div>
             </div>
+
             <button
               onClick={handlePay}
               className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg"
@@ -202,7 +204,7 @@ export default function CheckOut() {
         </div>
       </div>
 
-      {/* Order Placed Popup */}
+      {/* ✅ Order Placed Popup */}
       {orderPlaced && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center w-full max-w-md relative">
@@ -215,7 +217,9 @@ export default function CheckOut() {
             <h2 className="text-2xl font-bold text-green-600 mb-4">
               🎉 Order Placed Successfully!
             </h2>
-            <p className="mb-6 text-gray-700">Thank you for your purchase!</p>
+            <p className="mb-6 text-gray-700">
+              Thank you for your purchase! Your order has been confirmed.
+            </p>
             <button
               onClick={handleContinueShopping}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
@@ -226,18 +230,21 @@ export default function CheckOut() {
         </div>
       )}
 
-      {/* Sidebars */}
+      {/* ✅ Sidebars for Address and Card Selection */}
       <SaveAddress
         open={addressSidebar}
         setOpen={setAddressSidebar}
+        addresses={addresses}
         onSelect={(addr) => {
           setSelectedAddress(addr);
           setAddressSidebar(false);
         }}
       />
+
       <SaveCards
         open={cardSidebar}
         setOpen={setCardSidebar}
+        cards={cards}
         onSelect={(card) => {
           setSelectedCard(card);
           setCardSidebar(false);

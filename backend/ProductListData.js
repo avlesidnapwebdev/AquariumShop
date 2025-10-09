@@ -5386,7 +5386,7 @@ const productsData = [
       "black moscow guppy",
       "fish"
     ],
-    "image": "/assets/fish/fish/black moscow guppy female.png", 
+    "image": "/assets/fish/fish/black moscow guppy female.png",
     "description": "black moscow guppy is a high-quality fish item for aquarium enthusiasts.",
     "additionalInfo": [
       "Water type: Freshwater",

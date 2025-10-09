@@ -7,7 +7,7 @@ import Stars from "../../Main/Constant/Stars.jsx";
 import { getProductById } from "../../api/api.js";
 
 export default function ProductDetailsPage() {
-  const { id } = useParams(); // route like "/product/:id"
+  const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
@@ -21,31 +21,20 @@ export default function ProductDetailsPage() {
 
   // Fetch product by ID
   useEffect(() => {
-    if (!id) {
-      setError("Invalid product ID.");
-      setLoading(false);
-      return;
-    }
-
     const fetchProduct = async () => {
-      setLoading(true);
-      setError("");
       try {
-        const res = await getProductById(id);
-        setProduct(res || null);
-        if (!res) setError("Product not found.");
+        const data = await getProductById(id);
+        setProduct(data);
       } catch (err) {
         console.error("Failed to fetch product:", err);
-        setError("Failed to fetch product.");
+        setError("Failed to load product details.");
       } finally {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [id]);
 
-  // Popup handler
   const showPopup = (msg) => {
     setPopupMessage(msg);
     setTimeout(() => setPopupMessage(""), 2000);
@@ -61,23 +50,17 @@ export default function ProductDetailsPage() {
     showPopup(`❤️ ${product.name} added to Wishlist`);
   };
 
+  // ✅ Fixed: Send correct product + qty to BuyNow page
   const handleBuyNow = () => {
     const buyItem = { ...product, qty };
-    addToCart(buyItem);
     navigate("/buy-now", { state: { cartItems: [buyItem] } });
   };
 
-  if (loading) {
-    return <p className="text-center py-10 text-gray-700">Loading product...</p>;
-  }
-
-  if (error || !product) {
-    return <p className="text-center py-10 text-red-600">{error}</p>;
-  }
+  if (loading) return <p className="text-center py-10 text-gray-700">Loading product...</p>;
+  if (error || !product) return <p className="text-center py-10 text-red-600">{error}</p>;
 
   return (
     <div className="relative p-4 md:p-10">
-      {/* Popup */}
       {popupMessage && (
         <div className="fixed top-24 right-5 bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow-lg z-50 animate-fade-in-out">
           {popupMessage}
@@ -85,21 +68,14 @@ export default function ProductDetailsPage() {
       )}
 
       <div className="grid md:grid-cols-2 gap-6 mb-8 items-start">
-        {/* Product Image */}
         <div className="border p-4 rounded-lg flex items-center justify-center w-full max-w-md h-auto mx-auto">
-          <img
-            src={product.image || ""}
-            alt={product.name || "Product Image"}
-            className="max-h-full max-w-full object-contain"
-          />
+          <img src={product.image} alt={product.name} className="max-h-full max-w-full object-contain" />
         </div>
 
-        {/* Product Info */}
         <div className="w-full">
           <h1 className="text-2xl font-bold uppercase mb-2 text-blue-500">{product.name}</h1>
           <p className="text-blue-700 text-3xl font-semibold mb-2">₹{product.price}</p>
 
-          {/* Star Rating */}
           <div className="flex items-center gap-2 mb-2">
             <Stars rating={product.rating || 0} />
             <span className="text-gray-600 text-sm">
@@ -107,15 +83,11 @@ export default function ProductDetailsPage() {
             </span>
           </div>
 
-          <p className="mb-2 text-gray-700">
-            Available: {product.stock || 0}/{product.totalStock || product.stock || 0}
-          </p>
-
           {/* Quantity Selector */}
           <div className="flex items-center gap-2 my-4">
             <button
               onClick={() => setQty(Math.max(1, qty - 1))}
-              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-red-600"
+              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               -
             </button>
@@ -134,24 +106,15 @@ export default function ProductDetailsPage() {
             </button>
           </div>
 
-          {/* Action Buttons */}
+          {/* Buttons */}
           <div className="flex items-center gap-4 my-4 flex-wrap">
-            <button
-              onClick={handleBuyNow}
-              className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
-            >
+            <button onClick={handleBuyNow} className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
               Buy Now
             </button>
-            <button
-              onClick={handleAddToCart}
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-            >
+            <button onClick={handleAddToCart} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
               Add to Cart
             </button>
-            <button
-              onClick={handleAddToWishlist}
-              className="p-2 border rounded hover:bg-red-100"
-            >
+            <button onClick={handleAddToWishlist} className="p-2 border rounded hover:bg-red-100">
               <FaHeart className="text-red-500" />
             </button>
           </div>
@@ -168,8 +131,8 @@ export default function ProductDetailsPage() {
               <button
                 onClick={() => setActiveTab("description")}
                 className={`font-semibold ${activeTab === "description"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-600"
+                  ? "text-purple-600 border-b-2 border-purple-600"
+                  : "text-gray-600"
                   }`}
               >
                 Description
@@ -177,8 +140,8 @@ export default function ProductDetailsPage() {
               <button
                 onClick={() => setActiveTab("additional")}
                 className={`font-semibold ${activeTab === "additional"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-600"
+                  ? "text-purple-600 border-b-2 border-purple-600"
+                  : "text-gray-600"
                   }`}
               >
                 Additional Info
@@ -186,8 +149,8 @@ export default function ProductDetailsPage() {
               <button
                 onClick={() => setActiveTab("reviews")}
                 className={`font-semibold ${activeTab === "reviews"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-600"
+                  ? "text-purple-600 border-b-2 border-purple-600"
+                  : "text-gray-600"
                   }`}
               >
                 Reviews ({product.reviews?.length || 0})
