@@ -197,7 +197,7 @@ export default function Header({ setQuery, isLoggedIn, username, profilePic, onL
 
         {/* Desktop nav */}
         <nav className="hidden md:flex md:flex-row md:space-x-6">
-          {["Home", "Shop", "OrderTracking"].map((item) => (
+          {["Home", "Shop"].map((item) => (
             <Link key={item} to={item === "Home" ? "/" : `/${item}`} className="font-semibold md:text-sm lg:text-lg xl:text-xl text-blue-700 hover:text-orange-500">{item}</Link>
           ))}
         </nav>
@@ -263,7 +263,7 @@ export default function Header({ setQuery, isLoggedIn, username, profilePic, onL
       <div ref={menuRef} className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 z-50 ${menuOpen ? "translate-x-0" : "translate-x-full"}`}>
         <button className="absolute top-5 right-5 text-2xl text-blue-700" onClick={() => setMenuOpen(false)}><FaTimes /></button>
         <div className="flex flex-col items-start gap-6 mt-16 px-6 text-lg font-semibold text-blue-700">
-          {["Home", "Shop", "OrderTracking"].map((item) => (
+          {["Home", "Shop"].map((item) => (
             <Link key={item} to={item === "Home" ? "/" : `/${item}`} className="hover:text-black" onClick={() => setMenuOpen(false)}>{item}</Link>
           ))}
         </div>
