@@ -13,11 +13,23 @@ const OrderSchema = new mongoose.Schema(
     products: [OrderItemSchema],
     totalAmount: { type: Number, required: true, min: 0 },
     address: { type: Object, required: true },
-    paymentMethod: { type: String, enum: ["Cash", "Card", "Razorpay"], default: "Cash" },
-    paymentStatus: { type: String, enum: ["Pending", "Paid", "Failed"], default: "Pending" },
+    paymentMethod: {
+      type: String,
+      enum: ["Cash", "Card", "Razorpay"],
+      default: "Cash",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Paid", "Failed"],
+      default: "Pending",
+    },
     providerOrderId: String,
     providerPaymentId: String,
-    status: { type: String, enum: ["Received", "Shipping", "Out for Delivery", "Delivered"], default: "Received" },
+    status: {
+      type: String,
+      enum: ["Received", "Shipping", "Out for Delivery", "Delivered"],
+      default: "Received",
+    },
   },
   { timestamps: true }
 );
