@@ -28,7 +28,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",   // Vite dev
   "http://localhost:3000",   // CRA dev
-  process.env.CLIENT_URL      // Netlify frontend (set in Render environment)
+  "https://aquariumshop.netlify.app"      // Netlify frontend (set in Render environment)
 ].filter(Boolean);
 
 app.use(cors({
