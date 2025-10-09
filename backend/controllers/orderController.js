@@ -8,6 +8,7 @@ const buildOrderFromCart = async (cart) => {
   await cart.populate("products.product");
   const products = [];
   let total = 0;
+
   for (const item of cart.products) {
     const p = item.product;
     const qty = item.quantity;
@@ -18,16 +19,20 @@ const buildOrderFromCart = async (cart) => {
   return { products, total };
 };
 
-// Place order
+// ✅ Place order
 export const placeOrder = async (req, res) => {
   try {
     const { address, paymentMethod = "Cash" } = req.body;
     const cart = await Cart.findOne({ user: req.user._id });
-    if (!cart || cart.products.length === 0) return res.status(400).json({ message: "Cart is empty" });
+    if (!cart || cart.products.length === 0)
+      return res.status(400).json({ message: "Cart is empty" });
 
     const { products, total } = await buildOrderFromCart(cart);
 
-    const orderNumber = `AQ-${Date.now().toString(36)}-${Math.floor(Math.random()*10000)}-${uuidv4().slice(0,6)}`;
+    const orderNumber = `AQ-${Date.now().toString(36)}-${Math.floor(
+      Math.random() * 10000
+    )}-${uuidv4().slice(0, 6)}`;
+
     const order = await Order.create({
       orderNumber,
       user: req.user._id,
@@ -40,7 +45,9 @@ export const placeOrder = async (req, res) => {
 
     // reduce stock
     for (const it of products) {
-      await Product.findByIdAndUpdate(it.product, { $inc: { stock: -it.quantity } });
+      await Product.findByIdAndUpdate(it.product, {
+        $inc: { stock: -it.quantity },
+      });
     }
 
     cart.products = [];
@@ -49,34 +56,47 @@ export const placeOrder = async (req, res) => {
     res.status(201).json({ message: "Order placed", order });
   } catch (err) {
     console.error("placeOrder ERROR:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };
 
-// Get orders
+// ✅ Get all user orders (with product details)
 export const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const orders = await Order.find({ user: req.user._id })
+      .populate("products.product", "name image price rating category")
+      .sort({ createdAt: -1 });
+
     res.json(orders);
   } catch (err) {
     console.error("getMyOrders ERROR:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };
 
-// Get order by ID
+// ✅ Get single order by ID
 export const getOrderById = async (req, res) => {
   try {
-    const order = await Order.findOne({ _id: req.params.id, user: req.user._id }).populate("products.product");
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    }).populate("products.product", "name image price rating category");
+
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.json(order);
   } catch (err) {
     console.error("getOrderById ERROR:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };
 
-// Update order status
+// ✅ Update order status
 export const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -89,6 +109,8 @@ export const updateOrderStatus = async (req, res) => {
     res.json({ message: "Order status updated", order });
   } catch (err) {
     console.error("updateOrderStatus ERROR:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };

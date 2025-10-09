@@ -1,4 +1,3 @@
-// src/Components/Pages/MyOrderSideBar.jsx
 import React, { useRef, useEffect } from "react";
 import { IoClose } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
@@ -6,10 +5,14 @@ import { useOrders } from "./Order.jsx";
 
 export default function MyOrderSideBar({ open, setOpen }) {
   const sidebarRef = useRef(null);
-  const ordersContext = useOrders();
-  const orders = ordersContext?.orders || [];
-  
-  // Close sidebar when clicking outside
+  const { orders = [], loading, fetchOrders } = useOrders();
+
+  // Fetch orders on open
+  useEffect(() => {
+    if (open) fetchOrders();
+  }, [open]);
+
+  // Close on click outside
   useEffect(() => {
     const handleClick = (e) => {
       if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
@@ -45,55 +48,63 @@ export default function MyOrderSideBar({ open, setOpen }) {
           </button>
         </div>
 
-        {/* Orders list (scrollable) */}
+        {/* Orders list */}
         <div className="p-5 overflow-y-auto max-h-[calc(100vh-70px)] scrollbar-thin scrollbar-thumb-gray-300">
-          {orders.length === 0 ? (
-            <p className="text-red-600">No orders yet</p>
+          {loading ? (
+            <p>Loading orders...</p>
+          ) : !Array.isArray(orders) || orders.length === 0 ? (
+            <p className="text-gray-500 text-center mt-5">No orders yet</p>
           ) : (
-            orders.map((order) => (
-              <div
-                key={order.id}
-                className="flex items-center text-blue-500 gap-4 border-b py-4"
-              >
-                {/* Product Image */}
-                {order.image ? (
-                  <img
-                    src={order.image}
-                    alt={order.title}
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">
-                    No Image
-                  </div>
-                )}
+            orders
+              .filter((o) => o && Array.isArray(o.products)) // ✅ filter out bad entries
+              .map((order) =>
+                order.products.map((item) => {
+                  const product = item?.product || {};
+                  return (
+                    <div
+                      key={product._id || item._id || Math.random()}
+                      className="flex items-center gap-4 border-b py-4"
+                    >
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                          No Image
+                        </div>
+                      )}
 
-                {/* Info */}
-                <div className="flex-1">
-                  <p className="font-semibold">{order.title}</p>
-                  <p className="text-sm text-gray-600">
-                    Qty: {order.qty} × ₹{order.price}
-                  </p>
-                  <p className="text-sm font-medium text-black">
-                    Delivery: {order.deliveryDate}
-                  </p>
-
-                  {/* Rating placeholder */}
-                  <div className="flex items-center mt-1">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <FaStar
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < (order.rating || 0)
-                            ? "text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))
+                      <div className="flex-1">
+                        <p className="font-semibold text-blue-600">
+                          {product.name || "Unnamed Product"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Qty: {item.quantity || 1} × ₹
+                          {item.priceAtPurchase || product.price || 0}
+                        </p>
+                        <p className="text-sm font-medium text-black">
+                          Status: {order.status || "Pending"}
+                        </p>
+                        <div className="flex items-center mt-1">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <FaStar
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < (product.rating || 0)
+                                  ? "text-yellow-400"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )
           )}
         </div>
       </div>

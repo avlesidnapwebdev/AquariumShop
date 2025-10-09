@@ -1,37 +1,83 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Header from "../Main/Header.jsx";
 import Footer from "../Main/Footer.jsx";
 import { Trash2 } from "lucide-react";
-import ProductRecent from "../Components/Product/ProductRecentViews.jsx"; // ✅ Uppercase component
-
-// Dummy recent product images (replace with your imports)
-// import fish1 from "/assets/fish/fish/Adolfo s cory.png";
-// import fish2 from "/assets/fish/fish/Adonis tetra.png";
-// import fish3 from "/assets/fish/fish/African peacock cichlid.png";
+import ProductRecent from "../Components/Product/ProductRecentViews.jsx";
+import { updateCartItem, getCart, clearCart } from "../api/api.js";
 
 export default function OrderPage() {
   const location = useLocation();
   const initialItems = location.state?.cartItems || [];
 
   const [items, setItems] = useState(initialItems);
+  const [loading, setLoading] = useState(false);
 
-  const updateQty = (id, qty) => {
-    if (qty < 1) return;
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, qty: qty } : item))
-    );
+  // ✅ Fetch latest cart from DB (sync)
+  const fetchCart = async () => {
+    try {
+      setLoading(true);
+      const res = await getCart();
+      const cartItems = res.data?.products?.map((item) => ({
+        id: item.product._id,
+        name: item.product.name,
+        image: item.product.image,
+        price: item.product.price,
+        qty: item.quantity,
+      })) || [];
+      setItems(cartItems);
+    } catch (err) {
+      console.error("Fetch cart failed:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    fetchCart();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const removeItem = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  // ✅ Update quantity and sync to DB
+  const updateQty = async (id, qty) => {
+    if (qty < 1) {
+      await removeItem(id);
+      return;
+    }
+    try {
+      setItems((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, qty } : item))
+      );
+      await updateCartItem(id, { quantity: qty });
+    } catch (err) {
+      console.error("Failed to update quantity:", err);
+    }
+  };
+
+  // ✅ Remove item (set qty = 0)
+  const removeItem = async (id) => {
+    try {
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      await updateCartItem(id, { quantity: 0 }); // backend auto-remove if qty=0
+    } catch (err) {
+      console.error("Failed to remove item:", err);
+    }
   };
 
   const subtotal = items.reduce((acc, item) => acc + item.price * item.qty, 0);
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="h-[100px]"></div>
+        <div className="p-6 text-center text-blue-500 font-semibold">
+          Loading your order...
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   if (!items || items.length === 0) {
     return (
@@ -140,7 +186,7 @@ export default function OrderPage() {
           </div>
           <Link
             to="/checkout"
-            state={{ cartItems: items, grandTotal: subtotal }} // ✅ Send to checkout
+            state={{ cartItems: items, grandTotal: subtotal }}
           >
             <button className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded">
               Proceed to Checkout
@@ -153,9 +199,21 @@ export default function OrderPage() {
       <div className="max-w-6xl mx-auto mt-10">
         <ProductRecent
           recent={[
-            { id: 1001, name: "Adolfo's Cory", image: "/assets/fish/fish/Adolfo s cory.png" },
-            { id: 1002, name: "Adonis Tetra", image: "/assets/fish/fish/Adonis tetra.png" },
-            { id: 1003, name: "African Peacock Cichlid", image: "/assets/fish/fish/African peacock cichlid.png" },
+            {
+              id: 1001,
+              name: "Adolfo's Cory",
+              image: "/assets/fish/fish/Adolfo s cory.png",
+            },
+            {
+              id: 1002,
+              name: "Adonis Tetra",
+              image: "/assets/fish/fish/Adonis tetra.png",
+            },
+            {
+              id: 1003,
+              name: "African Peacock Cichlid",
+              image: "/assets/fish/fish/African peacock cichlid.png",
+            },
           ]}
         />
       </div>
