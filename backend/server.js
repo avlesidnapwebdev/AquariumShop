@@ -26,7 +26,7 @@ app.use(
     origin: [
       "http://localhost:5173", // Vite dev
       "http://localhost:3000", // React CRA dev
-      "https://yourfrontend.netlify.app", // <-- add Netlify domain later
+      "https://aquariumshop.netlify.app", // <-- add Netlify domain later
     ],
     credentials: true,
   })
@@ -63,7 +63,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 
 // Default route
-app.get("/", (req, res) => res.send("🐠 Aquarium Shop Backend is running"));
+app.get("/", (req, res) => res.send("Aquarium Shop Backend is running"));
 
 // 404 handler
 app.use((req, res, next) => {
