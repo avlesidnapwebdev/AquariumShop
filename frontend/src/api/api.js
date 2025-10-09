@@ -7,7 +7,7 @@ const envUrl = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL
 
 const normalizeBase = (url) => {
   if (!url) return "http://localhost:5000/api";
-  const trimmed = url.replace(/\/+$/, "");
+  const trimmed = url.replace(/\/+$/, ""); // remove trailing slashes
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
 
@@ -19,6 +19,10 @@ const BASE = normalizeBase(envUrl);
 const API = axios.create({
   baseURL: BASE,
   timeout: 10000,
+  headers: {
+    "Content-Type": "application/json", // ensure JSON content type
+    Accept: "application/json",
+  },
 });
 
 /* ============================================================
@@ -58,23 +62,19 @@ export const loginAPI = (data) => API.post("/auth/login", data);
    ✅ PRODUCT ENDPOINTS
 ============================================================ */
 export const getProducts = async () => {
-  const res = await API.get("/products");
+  const res = await API.get("/products", { headers: { "Cache-Control": "no-cache" } });
   return res.data.map((p) => ({
     ...p,
-    image: p.image?.startsWith("http")
-      ? p.image
-      : `${BASE.replace("/api", "")}${p.image}`,
+    image: p.image?.startsWith("http") ? p.image : `${BASE.replace("/api", "")}${p.image}`,
   }));
 };
 
 export const getProductById = async (id) => {
-  const res = await API.get(`/products/${id}`);
+  const res = await API.get(`/products/${id}`, { headers: { "Cache-Control": "no-cache" } });
   const p = res.data;
   return {
     ...p,
-    image: p.image?.startsWith("http")
-      ? p.image
-      : `${BASE.replace("/api", "")}${p.image}`,
+    image: p.image?.startsWith("http") ? p.image : `${BASE.replace("/api", "")}${p.image}`,
   };
 };
 
@@ -108,10 +108,8 @@ export const updateOrderStatus = (id, status) =>
 /* ============================================================
    ✅ PAYMENT (Razorpay) ENDPOINTS
 ============================================================ */
-export const createRazorpayOrder = (data) =>
-  API.post("/payments/razorpay/create", data);
-export const verifyRazorpayPayment = (data) =>
-  API.post("/payments/razorpay/verify", data);
+export const createRazorpayOrder = (data) => API.post("/payments/razorpay/create", data);
+export const verifyRazorpayPayment = (data) => API.post("/payments/razorpay/verify", data);
 
 /* ============================================================
    ✅ USER ENDPOINTS
@@ -124,11 +122,9 @@ export const updateProfileAPI = (formData) =>
   });
 
 export const addAddress = (data) => API.post("/users/addresses", data);
-export const updateAddress = (id, data) =>
-  API.put(`/users/addresses/${id}`, data);
+export const updateAddress = (id, data) => API.put(`/users/addresses/${id}`, data);
 export const removeAddress = (id) => API.delete(`/users/addresses/${id}`);
-export const setDefaultAddress = (id) =>
-  API.put(`/users/addresses/default/${id}`);
+export const setDefaultAddress = (id) => API.put(`/users/addresses/default/${id}`);
 
 export const addCard = (data) => API.post("/users/cards", data);
 export const removeCard = (id) => API.delete(`/users/cards/${id}`);
