@@ -48,13 +48,21 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response?.status === 401) {
+    const status = error?.response?.status;
+    const isNetworkError = !error.response;
+
+    if (status === 401) {
       localStorage.removeItem("token");
       if (typeof window !== "undefined") window.location.href = "/login";
+    } else if (isNetworkError) {
+      console.error("Network or CORS error:", error.message);
+      // Do NOT redirect to /login here
     }
+
     return Promise.reject(error);
   }
 );
+
 
 /* ============================================================
    ✅ AUTH ENDPOINTS
