@@ -12,7 +12,6 @@ export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Fetch wishlist from API
   const fetchWishlist = async () => {
     try {
       setLoading(true);
@@ -30,58 +29,25 @@ export const WishlistProvider = ({ children }) => {
     fetchWishlist();
   }, []);
 
-  // 🔹 Add item
   const addToWishlist = async (product) => {
-    try {
-      const productId = product?._id || product?.id;
-      if (!productId) throw new Error("Invalid product");
-
-      await apiAddToWishlist(productId);
-
-      setWishlistItems((prev) =>
-        prev.some((p) => (p._id || p.id) === productId) ? prev : [...prev, product]
-      );
-    } catch (err) {
-      console.error("❌ Add to wishlist failed:", err);
-      throw err;
-    }
+    const productId = product?._id || product?.id;
+    if (!productId) throw new Error("Invalid product");
+    await apiAddToWishlist(productId);
+    setWishlistItems((prev) => prev.some((p) => (p._id || p.id) === productId) ? prev : [...prev, product]);
   };
 
-  // 🔹 Remove item
   const removeFromWishlist = async (productId) => {
-    try {
-      await apiRemoveFromWishlist(productId);
-      setWishlistItems((prev) =>
-        prev.filter((p) => (p._id || p.id) !== productId)
-      );
-    } catch (err) {
-      console.error("❌ Remove from wishlist failed:", err);
-      throw err;
-    }
+    await apiRemoveFromWishlist(productId);
+    setWishlistItems((prev) => prev.filter((p) => (p._id || p.id) !== productId));
   };
 
-  // 🔹 Clear wishlist
   const clearWishlistItems = async () => {
-    try {
-      await apiClearWishlist();
-      setWishlistItems([]);
-    } catch (err) {
-      console.error("❌ Clear wishlist failed:", err);
-      throw err;
-    }
+    await apiClearWishlist();
+    setWishlistItems([]);
   };
 
   return (
-    <WishlistContext.Provider
-      value={{
-        wishlistItems,
-        loading,
-        addToWishlist,
-        removeFromWishlist,
-        clearWishlist: clearWishlistItems,
-        refreshWishlist: fetchWishlist,
-      }}
-    >
+    <WishlistContext.Provider value={{ wishlistItems, loading, addToWishlist, removeFromWishlist, clearWishlist: clearWishlistItems, refreshWishlist: fetchWishlist }}>
       {children}
     </WishlistContext.Provider>
   );
