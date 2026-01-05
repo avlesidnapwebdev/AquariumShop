@@ -56,7 +56,6 @@ export default function Login({ onLogin }) {
       localStorage.setItem("user", JSON.stringify(userObj));
 
       onLogin?.(userObj, token);
-      alert("Login successful!");
       navigate("/");
     } catch (err) {
       console.error("❌ Login error:", err);
