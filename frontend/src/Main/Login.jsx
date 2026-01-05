@@ -27,6 +27,7 @@ export default function Login({ onLogin }) {
   ============================================================ */
   const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
       const identifier = loginEmailPhone.trim();
 
@@ -35,15 +36,16 @@ export default function Login({ onLogin }) {
         password: loginPassword,
       };
 
-      console.log("🔐 Sending login payload:", payload);
-
+      // Call API
       const data = await loginAPI(payload);
 
+      // Get token
       const token = data?.token;
       if (!token) throw new Error("No token returned from server");
 
       localStorage.setItem("token", token);
 
+      // Get user data
       const user = data?.user || {};
 
       const userObj = {
@@ -55,6 +57,7 @@ export default function Login({ onLogin }) {
 
       localStorage.setItem("user", JSON.stringify(userObj));
 
+      // Update React Auth Context
       onLogin?.(userObj, token);
       navigate("/");
     } catch (err) {

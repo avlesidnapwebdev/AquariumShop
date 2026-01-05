@@ -30,16 +30,16 @@ const app = express();
 // ========================================
 
 const allowedOrigins = [
-  "https://aquariumshop.onrender.com", // Optional: allow self (Render API)
-   // ---- Local Development ----
-  "http://localhost:3000",   // React CRA
-  "http://localhost:5173",   // Vite
+  "https://aquariumshop.onrender.com", // Render Backend
+  "https://aquariumshop.selvapandi.com", // 🔥 Netlify Custom Domain
+  "http://localhost:3000",
+  "http://localhost:5173",
 ];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow Postman / same-origin
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
@@ -49,25 +49,17 @@ app.use(
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Origin",
-      "X-Requested-With",
-      "Content-Type",
-      "Accept",
-      "Authorization",
-      "Cache-Control", // 🔥 Add this line
-    ],
+    methods: "GET,POST,PUT,DELETE,OPTIONS",
+    allowedHeaders:
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
   })
 );
-
 
 // ========================================
 // ✅ Middleware
 // ========================================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 // ========================================
 // ✅ Path Setup
