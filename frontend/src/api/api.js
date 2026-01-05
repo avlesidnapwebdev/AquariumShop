@@ -1,22 +1,34 @@
 import axios from "axios";
 
 /* ============================================================
-   BASE URL CONFIGURATION
+   BASE URL SOURCES
 ============================================================ */
 const ENV_URL = import.meta.env.VITE_API_URL;
 const PROD_URL = "https://aquariumshop.onrender.com";
 const LOCAL_URL = "http://localhost:5000";
 
-// Normalize so every URL ends with /api
+/* Ensure every base URL ends with /api */
 const normalizeBase = (url) => {
   if (!url) return "";
   const trimmed = url.replace(/\/+$/, "");
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
 
-// Load previously working URL if exists
-let SELECTED_BASE =
-  localStorage.getItem("API_BASE") || normalizeBase(ENV_URL || PROD_URL);
+/* ============================================================
+   ENVIRONMENT SMART DETECTION
+============================================================ */
+const isLocalFrontend =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+
+/* ============================================================
+   SELECT DEFAULT BASE URL
+============================================================ */
+let SELECTED_BASE = normalizeBase(
+  ENV_URL ||
+    (isLocalFrontend ? LOCAL_URL : PROD_URL) ||
+    PROD_URL
+);
 
 console.log("🧩 Using API Base URL:", SELECTED_BASE);
 
@@ -45,7 +57,7 @@ API.interceptors.request.use(
 );
 
 /* ============================================================
-   RESPONSE INTERCEPTOR — Auto Switch Backend on Failure
+   RESPONSE INTERCEPTOR — DEV SAFE FALLBACK
 ============================================================ */
 API.interceptors.response.use(
   (response) => response,
@@ -53,25 +65,19 @@ API.interceptors.response.use(
     const status = error?.response?.status;
     const isNetworkError = !error.response;
 
-    // Already tried fallback? avoid infinite loop
+    // Prevent infinite retry loop
     if (error.config.__retry) return Promise.reject(error);
 
-    // Conditions to trigger fallback
-    const needFallback = isNetworkError || status === 404 || status >= 500;
+    // ONLY ALLOW FALLBACK IN DEV
+    if (isLocalFrontend) {
+      const fallback = normalizeBase(LOCAL_URL);
 
-    if (needFallback) {
-      console.warn("⚠️ API not reachable → Switching to localhost...");
-
-      const fallbackBase = normalizeBase(LOCAL_URL);
-
-      if (SELECTED_BASE !== fallbackBase) {
-        SELECTED_BASE = fallbackBase;
-        localStorage.setItem("API_BASE", fallbackBase);
-        API.defaults.baseURL = fallbackBase;
-        console.log("🔄 Switched API Base URL →", fallbackBase);
-
+      if ((isNetworkError || status >= 500) && SELECTED_BASE !== fallback) {
+        console.warn("⚠️ Switching API → Localhost (DEV fallback)");
+        SELECTED_BASE = fallback;
+        API.defaults.baseURL = fallback;
         error.config.__retry = true;
-        return API(error.config); // retry request automatically
+        return API(error.config);
       }
     }
 
@@ -115,23 +121,30 @@ export const deleteProduct = (id) => API.delete(`/products/${id}`);
    AUTH
 ============================================================ */
 export const registerAPI = async (data) => {
-  if (!data.email || !data.password)
+  if (!data?.email || !data?.password)
     throw new Error("Email and password required");
 
   const res = await API.post("/auth/register", data);
 
-  if (res.data?.token) localStorage.setItem("token", res.data.token);
-  return res.data;
+  if (res?.data?.token) localStorage.setItem("token", res.data.token);
+
+  return res?.data;
 };
 
-export const loginAPI = async (data) => {
-  if (!data.email && !data.mobile) throw new Error("Email or mobile required");
-  if (!data.password) throw new Error("Password required");
+export const loginAPI = async ({ email, mobile, password }) => {
+  if (!email && !mobile) throw new Error("Email OR mobile required");
+  if (!password) throw new Error("Password required");
 
-  const res = await API.post("/auth/login", data);
+  const payload = email
+    ? { email, password }
+    : { mobile, password };
 
-  if (res.data?.token) localStorage.setItem("token", res.data.token);
-  return res.data;
+  console.log("🔐 LOGIN PAYLOAD SENT:", payload);
+
+  const res = await API.post("/auth/login", payload);
+
+  // backend ALWAYS returns res.data
+  return res?.data;
 };
 
 /* ============================================================
