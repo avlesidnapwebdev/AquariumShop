@@ -16,12 +16,19 @@ import CheckOut from "./Pages/CheckOut.jsx";
 import Order from "./Pages/Order.jsx";
 
 export default function App() {
-  const { user, token, login, logout } = useAuth();
+  const auth = useAuth() || {};
+
+  const {
+    user = null,
+    token = null,
+    login = () => {},
+    logout = () => {},
+  } = auth;
+
   const isLoggedIn = !!token;
 
   return (
     <Routes>
-      {/* Home */}
       <Route
         path="/"
         element={
@@ -34,7 +41,6 @@ export default function App() {
         }
       />
 
-      {/* Shop */}
       <Route
         path="/shop"
         element={
@@ -47,7 +53,6 @@ export default function App() {
         }
       />
 
-      {/* Wishlist */}
       <Route
         path="/wishlist"
         element={
@@ -60,7 +65,6 @@ export default function App() {
         }
       />
 
-      {/* Order Tracking */}
       <Route
         path="/ordertracking"
         element={
@@ -73,7 +77,6 @@ export default function App() {
         }
       />
 
-      {/* FAQ */}
       <Route
         path="/faq"
         element={
@@ -86,7 +89,6 @@ export default function App() {
         }
       />
 
-      {/* Buy Now */}
       <Route
         path="/buy-now"
         element={
@@ -99,7 +101,6 @@ export default function App() {
         }
       />
 
-      {/* Checkout */}
       <Route
         path="/checkout"
         element={
@@ -112,7 +113,6 @@ export default function App() {
         }
       />
 
-      {/* Orders */}
       <Route
         path="/order"
         element={
@@ -125,7 +125,6 @@ export default function App() {
         }
       />
 
-      {/* Product Page */}
       <Route
         path="/product/:id"
         element={
@@ -138,10 +137,8 @@ export default function App() {
         }
       />
 
-      {/* Login */}
       <Route path="/login" element={<Login onLogin={login} />} />
 
-      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

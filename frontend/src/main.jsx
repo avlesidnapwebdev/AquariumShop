@@ -14,8 +14,8 @@ import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
+    <AuthProvider>
+      <BrowserRouter>
         <CartProvider>
           <WishlistProvider>
             <OrderProvider>
@@ -23,7 +23,7 @@ createRoot(document.getElementById("root")).render(
             </OrderProvider>
           </WishlistProvider>
         </CartProvider>
-      </AuthProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
   </React.StrictMode>
 );

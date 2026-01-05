@@ -4,23 +4,27 @@ import axios from "axios";
    BASE URL CONFIGURATION
 ============================================================ */
 const ENV_URL = import.meta.env.VITE_API_URL;
-const DEFAULT_PROD_URL = "https://aquariumshop.onrender.com";
+const PROD_URL = "https://aquariumshop.onrender.com";
+const LOCAL_URL = "http://localhost:5000";
 
-// Ensure base URL ends with /api
+// Normalize so every URL ends with /api
 const normalizeBase = (url) => {
   if (!url) return "";
   const trimmed = url.replace(/\/+$/, "");
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 };
 
-const BASE = normalizeBase(ENV_URL || DEFAULT_PROD_URL);
-console.log("🧩 Using API Base URL:", BASE);
+// Load previously working URL if exists
+let SELECTED_BASE =
+  localStorage.getItem("API_BASE") || normalizeBase(ENV_URL || PROD_URL);
+
+console.log("🧩 Using API Base URL:", SELECTED_BASE);
 
 /* ============================================================
    AXIOS INSTANCE
 ============================================================ */
 const API = axios.create({
-  baseURL: BASE,
+  baseURL: SELECTED_BASE,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
@@ -41,21 +45,34 @@ API.interceptors.request.use(
 );
 
 /* ============================================================
-   RESPONSE INTERCEPTOR — Handle errors
+   RESPONSE INTERCEPTOR — Auto Switch Backend on Failure
 ============================================================ */
 API.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error?.response?.status;
     const isNetworkError = !error.response;
 
-    if (status === 401) {
-      console.warn("⚠️ Unauthorized request detected");
-      // Optionally: redirect to login or refresh token
-    } else if (isNetworkError) {
-      console.error("🚨 Network/CORS error:", error.message);
-    } else if (status >= 500) {
-      console.error("🔥 Server error:", error.response?.data || error.message);
+    // Already tried fallback? avoid infinite loop
+    if (error.config.__retry) return Promise.reject(error);
+
+    // Conditions to trigger fallback
+    const needFallback = isNetworkError || status === 404 || status >= 500;
+
+    if (needFallback) {
+      console.warn("⚠️ API not reachable → Switching to localhost...");
+
+      const fallbackBase = normalizeBase(LOCAL_URL);
+
+      if (SELECTED_BASE !== fallbackBase) {
+        SELECTED_BASE = fallbackBase;
+        localStorage.setItem("API_BASE", fallbackBase);
+        API.defaults.baseURL = fallbackBase;
+        console.log("🔄 Switched API Base URL →", fallbackBase);
+
+        error.config.__retry = true;
+        return API(error.config); // retry request automatically
+      }
     }
 
     return Promise.reject(error);
@@ -63,11 +80,46 @@ API.interceptors.response.use(
 );
 
 /* ============================================================
-   AUTH ENDPOINTS
+   PRODUCTS
+============================================================ */
+export const getProducts = async () => {
+  const res = await API.get("/products", {
+    headers: { "Cache-Control": "no-cache" },
+  });
+
+  return res.data.map((p) => ({
+    ...p,
+    image: p.image?.startsWith("http")
+      ? p.image
+      : `${API.defaults.baseURL.replace("/api", "")}${p.image}`,
+  }));
+};
+
+export const getProductById = async (id) => {
+  const res = await API.get(`/products/${id}`);
+  const p = res.data;
+
+  return {
+    ...p,
+    image: p.image?.startsWith("http")
+      ? p.image
+      : `${API.defaults.baseURL.replace("/api", "")}${p.image}`,
+  };
+};
+
+export const createProduct = (data) => API.post("/products", data);
+export const updateProduct = (id, data) => API.put(`/products/${id}`, data);
+export const deleteProduct = (id) => API.delete(`/products/${id}`);
+
+/* ============================================================
+   AUTH
 ============================================================ */
 export const registerAPI = async (data) => {
-  if (!data.email || !data.password) throw new Error("Email and password required");
+  if (!data.email || !data.password)
+    throw new Error("Email and password required");
+
   const res = await API.post("/auth/register", data);
+
   if (res.data?.token) localStorage.setItem("token", res.data.token);
   return res.data;
 };
@@ -75,34 +127,12 @@ export const registerAPI = async (data) => {
 export const loginAPI = async (data) => {
   if (!data.email && !data.mobile) throw new Error("Email or mobile required");
   if (!data.password) throw new Error("Password required");
+
   const res = await API.post("/auth/login", data);
+
   if (res.data?.token) localStorage.setItem("token", res.data.token);
   return res.data;
 };
-
-/* ============================================================
-   PRODUCTS
-============================================================ */
-export const getProducts = async () => {
-  const res = await API.get("/products", { headers: { "Cache-Control": "no-cache" } });
-  return res.data.map((p) => ({
-    ...p,
-    image: p.image?.startsWith("http") ? p.image : `${BASE.replace("/api", "")}${p.image}`,
-  }));
-};
-
-export const getProductById = async (id) => {
-  const res = await API.get(`/products/${id}`);
-  const p = res.data;
-  return {
-    ...p,
-    image: p.image?.startsWith("http") ? p.image : `${BASE.replace("/api", "")}${p.image}`,
-  };
-};
-
-export const createProduct = (data) => API.post("/products", data);
-export const updateProduct = (id, data) => API.put(`/products/${id}`, data);
-export const deleteProduct = (id) => API.delete(`/products/${id}`);
 
 /* ============================================================
    CART
@@ -138,26 +168,34 @@ export const clearWishlist = () => API.delete("/wishlist/clear");
 export const placeOrder = (data) => API.post("/orders", data);
 export const getMyOrders = () => API.get("/orders");
 export const getOrderById = (id) => API.get(`/orders/${id}`);
-export const updateOrderStatus = (id, status) => API.put(`/orders/${id}/status`, { status });
+export const updateOrderStatus = (id, status) =>
+  API.put(`/orders/${id}/status`, { status });
 
 /* ============================================================
    PAYMENTS
 ============================================================ */
-export const createRazorpayOrder = (data) => API.post("/payments/razorpay/create", data);
-export const verifyRazorpayPayment = (data) => API.post("/payments/razorpay/verify", data);
+export const createRazorpayOrder = (data) =>
+  API.post("/payments/razorpay/create", data);
+
+export const verifyRazorpayPayment = (data) =>
+  API.post("/payments/razorpay/verify", data);
 
 /* ============================================================
-   USER PROFILE
+   USER
 ============================================================ */
 export const getProfileAPI = () => API.get("/users/profile");
-export const updateProfileAPI = (formData) => API.put("/users/profile", formData, {
-  headers: { "Content-Type": "multipart/form-data" },
-});
+
+export const updateProfileAPI = (formData) =>
+  API.put("/users/profile", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 
 export const addAddress = (data) => API.post("/users/addresses", data);
-export const updateAddress = (id, data) => API.put(`/users/addresses/${id}`, data);
+export const updateAddress = (id, data) =>
+  API.put(`/users/addresses/${id}`, data);
 export const removeAddress = (id) => API.delete(`/users/addresses/${id}`);
-export const setDefaultAddress = (id) => API.put(`/users/addresses/default/${id}`);
+export const setDefaultAddress = (id) =>
+  API.put(`/users/addresses/default/${id}`);
 
 export const addCard = (data) => API.post("/users/cards", data);
 export const removeCard = (id) => API.delete(`/users/cards/${id}`);
