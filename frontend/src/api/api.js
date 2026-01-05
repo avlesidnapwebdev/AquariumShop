@@ -121,30 +121,23 @@ export const deleteProduct = (id) => API.delete(`/products/${id}`);
    AUTH
 ============================================================ */
 export const registerAPI = async (data) => {
-  if (!data?.email || !data?.password)
+  if (!data.email || !data.password)
     throw new Error("Email and password required");
 
   const res = await API.post("/auth/register", data);
 
-  if (res?.data?.token) localStorage.setItem("token", res.data.token);
-
-  return res?.data;
+  if (res.data?.token) localStorage.setItem("token", res.data.token);
+  return res.data;
 };
 
-export const loginAPI = async ({ email, mobile, password }) => {
-  if (!email && !mobile) throw new Error("Email OR mobile required");
-  if (!password) throw new Error("Password required");
+export const loginAPI = async (data) => {
+  if (!data.email && !data.mobile) throw new Error("Email or mobile required");
+  if (!data.password) throw new Error("Password required");
 
-  const payload = email
-    ? { email, password }
-    : { mobile, password };
+  const res = await API.post("/auth/login", data);
 
-  console.log("🔐 LOGIN PAYLOAD SENT:", payload);
-
-  const res = await API.post("/auth/login", payload);
-
-  // backend ALWAYS returns res.data
-  return res?.data;
+  if (res.data?.token) localStorage.setItem("token", res.data.token);
+  return res.data;
 };
 
 /* ============================================================

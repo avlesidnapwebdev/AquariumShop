@@ -24,52 +24,42 @@ export default function Login({ onLogin }) {
 
   // --- handle login ---
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    try {
+      const identifier = loginEmailPhone.trim();
+      const payload = identifier.includes("@")
+        ? { email: identifier, password: loginPassword }
+        : { mobile: identifier, password: loginPassword };
 
-  try {
-    const identifier = loginEmailPhone.trim();
+      const res = await loginAPI(payload);
+      const data = res.data || {};
+      const token =
+        data.token || data?.user?.token || data?.accessToken || null;
+      const user = data.user || data;
 
-    const payload = identifier.includes("@")
-      ? { email: identifier, password: loginPassword }
-      : { mobile: identifier, password: loginPassword };
+      if (!token) throw new Error("Invalid token from server");
 
-    const data = await loginAPI(payload);
+      localStorage.setItem("token", token);
 
-    const token =
-      data?.token ||
-      data?.accessToken ||
-      data?.jwt ||
-      null;
+      const userObj = {
+        fullName: user?.fullName || user?.name || "User",
+        email: user?.email || "",
+        phone: user?.mobile || user?.phone || "",
+        profilePic: user?.profilePic || user?.avatar || null,
+      };
 
-    if (!token) throw new Error("No token returned from server");
-
-    localStorage.setItem("token", token);
-
-    const userObj = {
-      fullName: data?.user?.fullName || data?.fullName || data?.name || "User",
-      email: data?.user?.email || data?.email || "",
-      phone: data?.user?.mobile || data?.mobile || data?.phone || "",
-      profilePic: data?.user?.profilePic || data?.profilePic || null,
-    };
-
-    localStorage.setItem("user", JSON.stringify(userObj));
-
-    onLogin?.(userObj, token);
-
-    alert("Login successful!");
-    navigate("/");
-  } catch (err) {
-    console.error("❌ Login error:", err);
-
-    const message =
-      err?.response?.data?.message ||
-      err?.response?.data?.error ||
-      "Login failed. Check email/mobile & password.";
-
-    alert(message);
-  }
-};
-
+      localStorage.setItem("user", JSON.stringify(userObj));
+      onLogin?.(userObj, token);
+      navigate("/");
+    } catch (err) {
+      console.error("Login error:", err);
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        "Login failed. Please check your credentials.";
+      alert(message);
+    }
+  };
 
   // --- handle register ---
   const handleRegister = async (e) => {
