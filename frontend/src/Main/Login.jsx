@@ -98,7 +98,6 @@ export default function Login({ onLogin }) {
 
       localStorage.setItem("user", JSON.stringify(userObj));
       onLogin?.(userObj, token);
-      alert("Account created successfully!");
       navigate("/");
     } catch (err) {
       console.error("❌ Register error:", err);
