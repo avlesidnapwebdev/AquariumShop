@@ -30,13 +30,10 @@ const app = express();
 // ========================================
 
 const allowedOrigins = [
-  "https://aquariumshop.netlify.app", // Frontend (Netlify)
   "https://aquariumshop.onrender.com", // Optional: allow self (Render API)
    // ---- Local Development ----
   "http://localhost:3000",   // React CRA
   "http://localhost:5173",   // Vite
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:5173", 
 ];
 
 app.use(
