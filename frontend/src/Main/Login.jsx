@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { loginAPI, registerAPI } from "../api/api.js"; // ✅ fixed import
+import { loginAPI, registerAPI } from "../api/api.js";
 
 export default function Login({ onLogin }) {
   const navigate = useNavigate();
@@ -22,46 +22,54 @@ export default function Login({ onLogin }) {
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
 
-  // --- handle login ---
+  /* ============================================================
+     LOGIN
+  ============================================================ */
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const identifier = loginEmailPhone.trim();
-      const payload = identifier.includes("@")
-        ? { email: identifier, password: loginPassword }
-        : { mobile: identifier, password: loginPassword };
 
-      const res = await loginAPI(payload);
-      const data = res.data || {};
-      const token =
-        data.token || data?.user?.token || data?.accessToken || null;
-      const user = data.user || data;
+      const payload = {
+        emailOrMobile: identifier,
+        password: loginPassword,
+      };
 
-      if (!token) throw new Error("Invalid token from server");
+      console.log("🔐 Sending login payload:", payload);
+
+      const data = await loginAPI(payload);
+
+      const token = data?.token;
+      if (!token) throw new Error("No token returned from server");
 
       localStorage.setItem("token", token);
 
+      const user = data?.user || {};
+
       const userObj = {
-        fullName: user?.fullName || user?.name || "User",
+        fullName: user?.fullName || "User",
         email: user?.email || "",
-        phone: user?.mobile || user?.phone || "",
-        profilePic: user?.profilePic || user?.avatar || null,
+        phone: user?.mobile || "",
+        profilePic: user?.profilePic || null,
       };
 
       localStorage.setItem("user", JSON.stringify(userObj));
+
       onLogin?.(userObj, token);
+      alert("Login successful!");
       navigate("/");
     } catch (err) {
-      console.error("Login error:", err);
-      const message =
+      console.error("❌ Login error:", err);
+      alert(
         err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        "Login failed. Please check your credentials.";
-      alert(message);
+          "Login failed. Check email/mobile & password."
+      );
     }
   };
 
-  // --- handle register ---
+  /* ============================================================
+     REGISTER
+  ============================================================ */
   const handleRegister = async (e) => {
     e.preventDefault();
     if (regPassword !== regConfirmPassword)
@@ -75,12 +83,10 @@ export default function Login({ onLogin }) {
         password: regPassword,
       };
 
-      const res = await registerAPI(payload);
-      const data = res.data || {};
+      const data = await registerAPI(payload);
 
-      const token =
-        data.token || data?.user?.token || data?.accessToken || null;
-      const user = data.user || data;
+      const token = data?.token;
+      const user = data?.user || {};
 
       if (token) localStorage.setItem("token", token);
 
@@ -93,14 +99,14 @@ export default function Login({ onLogin }) {
 
       localStorage.setItem("user", JSON.stringify(userObj));
       onLogin?.(userObj, token);
+      alert("Account created successfully!");
       navigate("/");
     } catch (err) {
-      console.error("Register error:", err);
-      const message =
+      console.error("❌ Register error:", err);
+      alert(
         err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        "Registration failed. Make sure email or mobile is unique.";
-      alert(message);
+          "Registration failed. Make sure email or mobile is unique."
+      );
     }
   };
 
@@ -131,6 +137,7 @@ export default function Login({ onLogin }) {
                 required
               />
             </div>
+
             <div>
               <label className="text-sm font-medium">Password</label>
               <div className="relative">
@@ -198,6 +205,7 @@ export default function Login({ onLogin }) {
                 required
               />
             </div>
+
             <div>
               <label className="text-sm">Email</label>
               <input
@@ -208,6 +216,7 @@ export default function Login({ onLogin }) {
                 required
               />
             </div>
+
             <div>
               <label className="text-sm">Mobile</label>
               <input
@@ -218,6 +227,7 @@ export default function Login({ onLogin }) {
                 required
               />
             </div>
+
             <div>
               <label className="text-sm">Password</label>
               <div className="relative">
@@ -237,6 +247,7 @@ export default function Login({ onLogin }) {
                 </button>
               </div>
             </div>
+
             <div>
               <label className="text-sm">Confirm Password</label>
               <div className="relative">

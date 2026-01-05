@@ -126,18 +126,16 @@ export const registerAPI = async (data) => {
 
   const res = await API.post("/auth/register", data);
 
-  if (res.data?.token) localStorage.setItem("token", res.data.token);
-  return res.data;
+  return res.data; // backend already returns token + user
 };
 
 export const loginAPI = async (data) => {
-  if (!data.email && !data.mobile) throw new Error("Email or mobile required");
+  if (!data.emailOrMobile) throw new Error("Email or mobile required");
   if (!data.password) throw new Error("Password required");
 
   const res = await API.post("/auth/login", data);
 
-  if (res.data?.token) localStorage.setItem("token", res.data.token);
-  return res.data;
+  return res.data; // backend returns token + user
 };
 
 /* ============================================================
