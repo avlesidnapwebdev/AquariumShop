@@ -169,7 +169,7 @@ export default function Header({ setQuery, isLoggedIn, username, profilePic, onL
             className="w-full h-8 rounded-full text-black px-3 border border-gray-300 outline-none text-sm"
           />
           <button className="absolute right-0.5 bg-blue-500 w-8 h-7 rounded-full flex items-center justify-center">
-            <img src="/assets/search.png" alt="Search" className="w-7" />
+            <img src="/assets/search2.png" alt="Search" className="w-4" />
           </button>
 
           {showResults && filteredResults.length > 0 && (
@@ -189,10 +189,10 @@ export default function Header({ setQuery, isLoggedIn, username, profilePic, onL
         </div>
 
         {/* Hamburger */}
-        <button ref={menuButtonRef} onClick={toggleMenu} className="flex flex-col gap-1.5 bg-blue-600 p-2 rounded-md cursor-pointer md:hidden">
-          <span className="w-6 h-0.5 bg-white" />
-          <span className="w-6 h-0.5 bg-white" />
-          <span className="w-6 h-0.5 bg-white" />
+        <button ref={menuButtonRef} onClick={toggleMenu} className="flex flex-col gap-1.5 border-2 border-blue-600 bg-transparent p-1 border- rounded-md cursor-pointer md:hidden">
+          <span className="w-5 h-0.5 bg-blue-600" />
+          <span className="w-5 h-0.5 bg-blue-600" />
+          <span className="w-5 h-0.5 bg-blue-600" />
         </button>
 
         {/* Desktop nav */}
@@ -213,7 +213,7 @@ export default function Header({ setQuery, isLoggedIn, username, profilePic, onL
             className="w-56 h-9 rounded-full px-3 border outline-none bg-blue-600 text-white placeholder-white"
           />
           <button className="absolute right-0.5 bg-blue-500 w-8 h-8 rounded-full flex items-center justify-center">
-            <img src="/assets/search.png" alt="Search" className="w-7 text-white" />
+            <img src="/assets/search2.png" alt="Search" className="w-4 text-white" />
           </button>
 
           {showResults && filteredResults.length > 0 && (

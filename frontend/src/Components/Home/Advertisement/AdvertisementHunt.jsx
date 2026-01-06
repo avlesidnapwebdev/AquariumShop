@@ -12,7 +12,7 @@ export default function AdvertisementHunt({}) {
             <span className="text-xl md:text-2xl font-semibold text-blue-500 leading-tight">
               Exclusive Gear
             </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-[#19063C] leading-snug max-w-2xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-[#19063C] leading-none max-w-2xl">
               Hunting Tools & Accessories
             </h1>
           </div>

@@ -13,7 +13,7 @@ export default function AdvertisementFood() {
             <span className="text-xl md:text-2xl font-semibold text-blue-500 leading-tight">
               Healthy Nutrition
             </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-[#19063C] leading-snug max-w-2xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-[#19063C] leading-none max-w-2xl">
               Premium Food for Every Fish
             </h1>
           </div>

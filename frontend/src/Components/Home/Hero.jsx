@@ -30,7 +30,7 @@ export default function Hero() {
 
         <Link
           to="/Shop"
-          className="mt-8 px-8 py-3 rounded-full border-2 border-purple-400 bg-blue-900 text-white font-bold text-lg sm:text-xl hover:bg-cyan-100 hover:text-black hover:scale-105 transition-all duration-300"
+          className="mt-8 px-8 py-3 rounded-full border-2 border-white bg-gradient-to-br from-cyan-400 to-blue-700 text-white font-bold text-lg sm:text-xl hover:bg-cyan-100 hover:text-black hover:scale-105 transition-all duration-300"
         >
           Shop Now
         </Link>

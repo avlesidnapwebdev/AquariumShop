@@ -58,34 +58,75 @@ export default function WishlistSidebar({ wishlistOpen, toggleWishlist }) {
 
   return (
     <div
-      className={`fixed top-0 right-0 h-[90vh] w-80 z-50 transform transition-transform duration-300 ease-in-out ${
-        wishlistOpen ? "translate-x-0" : "translate-x-full"
-      }`}
+      className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg transform transition-transform duration-300 z-50
+         ${wishlistOpen ? "translate-x-0" : "translate-x-full"}`}
     >
-      <div ref={sidebarRef} className="relative h-full w-80 bg-white shadow-lg flex flex-col">
+      <div
+        ref={sidebarRef}
+        className="relative h-full w-80 bg-white shadow-lg flex flex-col"
+      >
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-lg font-bold text-blue-600">My Wishlist</h2>
-          <button onClick={toggleWishlist} className="text-blue-500 font-extrabold hover:text-red-500">
+          <button
+            onClick={toggleWishlist}
+            className="text-blue-500 font-extrabold hover:text-red-500"
+          >
             ✕
           </button>
         </div>
 
+        {/* Footer */}
+        {wishlistItems.length > 0 && (
+          <div className="p-4 border-t space-y-3">
+            <button
+              onClick={goToFullWishlist}
+              className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition"
+            >
+              Full View
+            </button>
+            <button
+              onClick={handleClear}
+              disabled={clearing}
+              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition"
+            >
+              {clearing ? "Clearing..." : "Clear Wishlist"}
+            </button>
+          </div>
+        )}
+
         {/* Items */}
         <div className="p-4 overflow-y-auto flex-1 no-scrollbar">
           {wishlistItems.length === 0 ? (
-            <p className="text-gray-500 text-center mt-10">Your wishlist is empty.</p>
+            <p className="text-gray-500 text-center mt-10">
+              Your wishlist is empty.
+            </p>
           ) : (
             wishlistItems.map((item) => {
               const id = item._id || item.id || item.productId;
               return (
-                <div key={id} className="flex items-center justify-between gap-3 mb-3 border-b pb-2">
-                  <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-md border" />
+                <div
+                  key={id}
+                  className="flex items-center justify-between gap-3 mb-3 border-b pb-2"
+                >
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-16 h-16 object-cover rounded-md border"
+                  />
                   <div className="flex-1">
-                    <h3 className="font-semibold text-blue-600 line-clamp-1">{item.name}</h3>
-                    <p className="text-sm text-gray-600 font-medium">${item.price}</p>
+                    <h3 className="font-semibold text-blue-600 line-clamp-1">
+                      {item.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 font-medium">
+                      ${item.price}
+                    </p>
                   </div>
-                  <button onClick={() => handleRemove(id)} className="text-red-500 hover:text-red-700 p-1 rounded-md transition" title="Remove from wishlist">
+                  <button
+                    onClick={() => handleRemove(id)}
+                    className="text-red-500 hover:text-red-700 p-1 rounded-md transition"
+                    title="Remove from wishlist"
+                  >
                     <FiTrash2 size={18} />
                   </button>
                 </div>
@@ -93,18 +134,6 @@ export default function WishlistSidebar({ wishlistOpen, toggleWishlist }) {
             })
           )}
         </div>
-
-        {/* Footer */}
-        {wishlistItems.length > 0 && (
-          <div className="p-4 border-t space-y-3">
-            <button onClick={goToFullWishlist} className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition">
-              Full View
-            </button>
-            <button onClick={handleClear} disabled={clearing} className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition">
-              {clearing ? "Clearing..." : "Clear Wishlist"}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

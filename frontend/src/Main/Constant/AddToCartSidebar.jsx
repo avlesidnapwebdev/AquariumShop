@@ -31,7 +31,7 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
 
   return (
     <div
-      className={`fixed top-0 right-0 h-[90vh] w-80 bg-white shadow-lg transform transition-transform duration-300 z-50
+      className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg transform transition-transform duration-300 z-50
         ${cartOpen ? "translate-x-0" : "translate-x-full"}`}
     >
       {/* Close Button */}
@@ -45,21 +45,47 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
       {/* Header */}
       <h2 className="text-xl font-bold p-6 border-b text-blue-500">My Cart</h2>
 
+      {/* Footer */}
+      {cartItems && cartItems.length > 0 && (
+        <div className="p-4 border-t bg-white">
+          <div className="flex justify-between items-center mb-3">
+            <span className="font-bold text-blue-600">Total:</span>
+            <span className="font-bold text-red-600 text-lg">
+              ₹ {totalPrice}
+            </span>
+          </div>
+
+          <button
+            onClick={handlePurchase}
+            className="w-full block text-center bg-blue-600 hover:bg-orange-500 text-white font-bold py-2 rounded-lg transition"
+          >
+            Purchase Now
+          </button>
+        </div>
+      )}
+
       {/* Cart Items */}
       <div className="p-4 overflow-y-auto h-[calc(100%-180px)]">
         {!cartItems || cartItems.length === 0 ? (
           <p className="text-red-600">Your cart is empty</p>
         ) : (
           cartItems.map((item) => (
-            <div key={item.id || item._id} className="flex items-center gap-3 border-b py-3">
+            <div
+              key={item.id || item._id}
+              className="flex items-center gap-3 border-b py-3"
+            >
               <img
                 src={item.image}
                 alt={item.name}
                 className="w-14 h-14 rounded-lg object-cover"
               />
               <div className="flex-1">
-                <p className="font-semibold text-blue-500 line-clamp-1">{item.name}</p>
-                <p className="text-sm font-bold text-red-500">₹ {item.price} × {item.qty}</p>
+                <p className="font-semibold text-blue-500 line-clamp-1">
+                  {item.name}
+                </p>
+                <p className="text-sm font-bold text-red-500">
+                  ₹ {item.price} × {item.qty}
+                </p>
                 <p className="text-sm text-gray-600">
                   Subtotal: ₹ {Number(item.price) * Number(item.qty)}
                 </p>
@@ -82,23 +108,6 @@ export default function AddToCartSidebar({ cartOpen, toggleCart }) {
           ))
         )}
       </div>
-
-      {/* Footer */}
-      {cartItems && cartItems.length > 0 && (
-        <div className="p-4 border-t bg-white">
-          <div className="flex justify-between items-center mb-3">
-            <span className="font-bold text-blue-600">Total:</span>
-            <span className="font-bold text-red-600 text-lg">₹ {totalPrice}</span>
-          </div>
-
-          <button
-            onClick={handlePurchase}
-            className="w-full block text-center bg-blue-600 hover:bg-orange-500 text-white font-bold py-2 rounded-lg transition"
-          >
-            Purchase Now
-          </button>
-        </div>
-      )}
     </div>
   );
 }

@@ -54,25 +54,24 @@ export default function BannerSection() {
         </h3>
 
         {/* Grid Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {banners.map(({ id, title, discount, sub, img, gradient, category }) => (
             <div
               key={id}
               className={`${gradient} w-full h-auto rounded-2xl shadow-md flex items-center justify-between p-4`}
             >
               {/* Text Section */}
-              <div className="flex flex-col items-center text-center gap-2 flex-1">
+              <div className="flex flex-col items-center text-center gap-1 flex-1">
                 <span className="text-white text-xs md:text-sm font-bold uppercase">
                   {title}
                 </span>
-                <h1 className="text-white font-extrabold text-2xl md:text-3xl lg:text-4xl leading-tight">
+                <h1 className="flex flex-col text-center text-white font-extrabold text-2xl md:text-3xl lg:text-4xl leading-tight">
                   {discount}
-                  <br />
                   <span className="text-sm md:text-lg">{sub}</span>
                 </h1>
                 <Link
                   to={`/Shop?category=${encodeURIComponent(category)}`} // ✅ pass filter
-                  className="mt-2 px-4 py-2 text-xs md:text-sm font-bold uppercase bg-[#6839cc] text-white rounded-full transition-transform duration-300 hover:bg-[#e0f7fa] hover:text-[#003b73] hover:scale-105"
+                  className="px-2 py-1 text-xs md:text-sm font-bold uppercase bg-[#6839cc] text-white rounded-full transition-transform duration-300 hover:bg-[#e0f7fa] hover:text-[#003b73] hover:scale-105"
                 >
                   Shop now
                 </Link>

@@ -40,7 +40,7 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
   };
 
   const renderFilters = () => (
-    <>
+    <div className="text-blue-600">
       {/* Category Filter */}
       <div className="mb-6">
         <h4 className="font-semibold mb-2">Category</h4>
@@ -121,11 +121,11 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
           Clear All Filters
         </button>
       </div>
-    </>
+    </div>
   );
 
   return (
-    <>
+    <div className="text-blue-600">
       {/* Desktop Sidebar */}
       <aside className="w-64 border-r p-6 bg-white text-blue-500 hidden md:block fixed top-[72px] lg:top-[88px] left-0 h-full overflow-y-auto">
         <h3 className="text-lg font-bold mb-4">Filters</h3>
@@ -151,6 +151,6 @@ export default function SideBar({ filters, setFilters, counts, isOpen, toggleSid
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
