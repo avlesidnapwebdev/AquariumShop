@@ -15,19 +15,14 @@ import wishlistRoutes from "./routes/wishlistRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
-// ========================================
-// ✅ Load Environment Variables
-// ========================================
 dotenv.config();
-
-// ✅ Connect MongoDB
 await connectDB();
 
 const app = express();
 
-// ========================================
+
 // ✅ CORS CONFIGURATION (Render + Netlify)
-// ========================================
+
 
 const allowedOrigins = [
   "https://aquariumshop.onrender.com", // Render Backend
@@ -55,15 +50,13 @@ app.use(
   })
 );
 
-// ========================================
+
 // ✅ Middleware
-// ========================================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ========================================
+
 // ✅ Path Setup
-// ========================================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -77,9 +70,16 @@ app.get("/assets/:filename", (req, res) => {
   res.sendFile(filePath);
 });
 
-// ========================================
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
+// ✅ Root Route
+app.get("/", (req, res) => {
+  res.send("🐠 Aquarium Shop Backend is running on Render!");
+});
+
 // ✅ API ROUTES
-// ========================================
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
@@ -88,9 +88,12 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 
-// ========================================
+// ✅ 404 Handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
 // ✅ Global Error Handler
-// ========================================
 app.use((err, req, res, next) => {
   console.error("🔥 Global Error:", err.stack || err);
   res.status(500).json({
@@ -99,24 +102,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.get("/health", (req, res) => {
-  res.status(200).send("OK");
-});
-// ========================================
-// ✅ 404 Handler
-// ========================================
-app.use((req, res, next) => {
-  res.status(404).json({ message: "Route not found" });
-});
-// ========================================
-// ✅ Root Route
-// ========================================
-app.get("/", (req, res) => {
-  res.send("🐠 Aquarium Shop Backend is running on Render!");
-});
-// ========================================
+
 // ✅ Start Server
-// ========================================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
