@@ -114,6 +114,9 @@ app.use((err, req, res, next) => {
     error: err.message || err,
   });
 });
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
 
 // ========================================
 // ✅ Start Server
