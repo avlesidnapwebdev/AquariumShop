@@ -30,10 +30,10 @@ const app = express();
 // ========================================
 
 const allowedOrigins = [
-  "https://aquariumshop.onrender.com",       // Render Backend
-  "https://aquariumshop.selvapandi.com",     // 🔥 Netlify Custom Domain
+  "https://aquariumshop.onrender.com", // Render Backend
+  "https://aquariumshop.selvapandi.com", // 🔥 Netlify Custom Domain
   "http://localhost:3000",
-  "http://localhost:5173"
+  "http://localhost:5173",
 ];
 
 app.use(
@@ -47,21 +47,19 @@ app.use(
       "Content-Type",
       "Accept",
       "Authorization",
-      "Cache-Control",       
-      "Pragma",              
-      "Expires"              
+      "Cache-Control",
+      "Pragma",
+      "Expires",
     ],
-    optionsSuccessStatus: 200
+    optionsSuccessStatus: 200,
   })
 );
-
 
 // ========================================
 // ✅ Middleware
 // ========================================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 // ========================================
 // ✅ Path Setup
@@ -91,13 +89,6 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 
 // ========================================
-// ✅ Root Route
-// ========================================
-app.get("/", (req, res) => {
-  res.send("🐠 Aquarium Shop Backend is running on Render!");
-});
-
-// ========================================
 // ✅ 404 Handler
 // ========================================
 app.use((req, res, next) => {
@@ -114,10 +105,16 @@ app.use((err, req, res, next) => {
     error: err.message || err,
   });
 });
+
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
-
+// ========================================
+// ✅ Root Route
+// ========================================
+app.get("/", (req, res) => {
+  res.send("🐠 Aquarium Shop Backend is running on Render!");
+});
 // ========================================
 // ✅ Start Server
 // ========================================
