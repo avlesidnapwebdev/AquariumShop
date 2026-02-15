@@ -4,7 +4,7 @@ import axios from "axios";
    BASE URL SOURCES
 ============================================================ */
 const ENV_URL = import.meta.env.VITE_API_URL;
-const PROD_URL = "https://aquariumshop.onrender.com";
+const PROD_URL = "https://api-aquariumshop.selvapandi.com";
 const LOCAL_URL = "http://localhost:5000";
 
 /* Ensure every base URL ends with /api */

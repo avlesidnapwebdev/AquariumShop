@@ -20,16 +20,28 @@ await connectDB();
 
 const app = express();
 
-
 // ✅ CORS CONFIGURATION (Render + Netlify)
 
+// const allowedOrigins = [
+//   "https://api-aquariumshop.selvapandi.com", // Render Backend
+//   "https://aquariumshop.selvapandi.com", // 🔥 Netlify Custom Domain
+//   "https://aquariumshop.onrender.com",
+//   "http://localhost:3000",
+//   "http://localhost:5173",
+// ];
 
-const allowedOrigins = [
-  "https://aquariumshop.onrender.com", // Render Backend
-  "https://aquariumshop.selvapandi.com", // 🔥 Netlify Custom Domain
-  "http://localhost:3000",
-  "http://localhost:5173",
-];
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? [
+        "https://aquariumshop.selvapandi.com",
+        // "https://api-aquariumshop.selvapandi.com",
+        // "https://aquariumshop.onrender.com",
+      ]
+    : [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://localhost:5000",
+      ];
 
 app.use(
   cors({
@@ -47,14 +59,12 @@ app.use(
       "Expires",
     ],
     optionsSuccessStatus: 200,
-  })
+  }),
 );
-
 
 // ✅ Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 // ✅ Path Setup
 const __filename = fileURLToPath(import.meta.url);
@@ -101,7 +111,6 @@ app.use((err, req, res, next) => {
     error: err.message || err,
   });
 });
-
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5000;
