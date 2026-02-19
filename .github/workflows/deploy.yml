@@ -1,4 +1,4 @@
-name: Deploy Expenses API
+name: Deploy AquariumShop API
 
 on:
   push:
@@ -18,8 +18,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
 
           script: |
-            cd /var/www/ExpenseTracker
+            cd /var/www/AquariumShop
             git pull origin main
             npm install
-            pm2 restart expenses-api
+            pm2 restart aquashop-api
             pm2 save
