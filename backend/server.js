@@ -20,15 +20,6 @@ await connectDB();
 
 const app = express();
 
-// ✅ CORS CONFIGURATION (Render + Netlify)
-
-// const allowedOrigins = [
-//   "https://api-aquariumshop.selvapandi.com", // Render Backend
-//   "https://aquariumshop.selvapandi.com", // 🔥 Netlify Custom Domain
-//   "https://aquariumshop.onrender.com",
-//   "http://localhost:3000",
-//   "http://localhost:5173",
-// ];
 
 const allowedOrigins =
   process.env.NODE_ENV === "production"
