@@ -25,7 +25,6 @@ const allowedOrigins =
   process.env.NODE_ENV === "production"
     ? [
         "https://aquariumshop.selvapandi.com",
-        "https://aquashop2-0.netlify.app",
         // "https://api-aquariumshop.selvapandi.com",
         // "https://aquariumshop.onrender.com",
       ]
